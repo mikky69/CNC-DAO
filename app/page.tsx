@@ -1,6 +1,6 @@
 import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
-import { IconGPS, IconRealtime, IconOnChain, IconCheck, SocialIcon } from "@/components/Icons"
+import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
 
 /**
  * CNC DAO — Homepage
@@ -207,6 +207,12 @@ export default function Home() {
       {/* ---------- Hero ---------- */}
       <section id="hero" className="relative overflow-hidden px-6 pb-24 pt-20 md:px-16 md:pt-32">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(45,106,49,0.35),transparent_60%)]" />
+        <img
+          src="https://framerusercontent.com/images/mRLVTvuN46hVjqnB9DPdYH8RXUY.png"
+          alt=""
+          aria-hidden="true"
+          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-[300px] -translate-x-1/2 -translate-y-1/2 opacity-50 md:w-[420px]"
+        />
         <div className="mx-auto flex max-w-[1120px] flex-col items-center gap-8 text-center">
           <h1 className="font-[family-name:var(--font-dm-sans)] text-[36px] font-medium leading-[1.1] tracking-[-0.02em] md:text-[64px]">
             Every Tree Verified <br className="hidden md:block" />
@@ -222,13 +228,13 @@ export default function Home() {
               href="/tree-reg"
               className="flex items-center gap-2 rounded-full bg-[#1db954] px-6 py-3 text-sm font-medium"
             >
-              Plant a Tree →
+              Plant a Tree <IconArrow className="h-4 w-4 rotate-45" />
             </Link>
             <Link
               href="/map"
               className="flex items-center gap-2 rounded-full bg-white/95 px-6 py-3 text-sm font-medium text-[#0b0a12]"
             >
-              View Map →
+              View Map <IconArrow className="h-4 w-4 rotate-45" />
             </Link>
           </div>
 
@@ -258,11 +264,12 @@ export default function Home() {
           </p>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {steps.map((s) => (
+            {steps.map((s, i) => (
               <div
                 key={s.n}
                 className="rounded-xl border border-white/10 bg-[#08080f] p-6"
               >
+                <StepIcon step={(i + 1) as 1 | 2 | 3 | 4 | 5 | 6} className="mb-4 h-12 w-12" />
                 <span className="mb-4 block font-[family-name:var(--font-space-mono)] text-xs font-bold text-[#f0a830]">
                   {s.n}
                 </span>
@@ -399,7 +406,7 @@ export default function Home() {
               href="/tree-reg"
               className="rounded-full bg-white/95 px-6 py-3 text-sm font-medium text-[#0b0a12]"
             >
-              Plant Tree →
+              Plant Tree <IconArrow className="inline h-4 w-4 rotate-45" />
             </Link>
           </div>
         </div>

@@ -282,6 +282,8 @@ export default function Home() {
                 <h3 className="mb-2 font-[family-name:var(--font-syne)] text-xl font-bold tracking-[-0.02em]">
                   {s.title}
                 </h3>
+                <p className="text-sm text-white/60">{s.body}</p>
+              </div>
             ))}
           </div>
 

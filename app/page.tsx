@@ -1,5 +1,6 @@
 import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
+import { IconGPS, IconRealtime, IconOnChain, IconCheck, SocialIcon } from "@/components/Icons"
 
 /**
  * CNC DAO — Homepage
@@ -66,24 +67,28 @@ const whyWeExist = [
   {
     tags: ["Community-led", "GPS-verified"],
     heading: "Communities are planting. Nobody is counting.",
+    image: "https://framerusercontent.com/images/dE3XXZ4AQ0vtNb4Bzls1LgTPI.png",
     body: "Grassroots tree planting happens every day across Africa and the world, by youth groups, local heroes, and everyday people who care. But without a system to record and track what they plant, their effort disappears the moment they walk away. CNC DAO gives every community planter a permanent, GPS-verified, on-chain record of every tree they grow, so their work is never invisible again.",
     reverse: false,
   },
   {
     tags: ["Two-Hero consensus", "No self-approval"],
     heading: "Anyone can claim to save the planet.",
+    image: "https://framerusercontent.com/images/sfGyIIGWV32EGzEwnNzuhvscm7M.png",
     body: "A photo opportunity is not proof. A social media post is not verification. Without an independent system to confirm environmental action, anyone can make claims and no one can challenge them. CNC DAO requires every tree to pass through two independent Nature Hero validators before anything is written on-chain. No single person can approve their own submission. Consensus is enforced by code, not trust.",
     reverse: true,
   },
   {
     tags: ["Proof of stewardship", "Solana NFT"],
     heading: "Real people. Real trees. Zero recognition.",
+    image: "https://framerusercontent.com/images/FSwWS7SqchWjr4g6ysSfsfMQQc.png",
     body: "Across Africa and the developing world, thousands of everyday people plant trees, restore land, and protect ecosystems with their own hands. Their effort is never recorded, never rewarded, and completely invisible to the rest of the world. CNC DAO mints every verified, surviving tree as a permanent Solana NFT, a digital badge of real-world impact that belongs to the planter forever.",
     reverse: false,
   },
   {
     tags: ["Tamper-proof", "Permanent record"],
     heading: "If it's not on-chain, it didn't happen.",
+    image: "https://framerusercontent.com/images/O0O7mDIk2fpbKy1FVzW4uXDqRF4.png",
     body: "Paper records get lost. Spreadsheets get deleted. Organisations shut down. The only environmental record that cannot be altered, censored, or erased is one written permanently on a decentralised blockchain. CNC DAO anchors every verified tree to the Solana blockchain, tied to GPS coordinates, a photo hash, validator signatures, and a timestamp that no one can ever change or delete.",
     reverse: true,
   },
@@ -128,16 +133,19 @@ const testimonials = [
     name: "Planting",
     role: "CNC DAO Planting Operator",
     quote: "Every seed placed with precision is a future engineered, not guessed.",
+    image: "https://framerusercontent.com/images/4jmBgsQLtpdR43r0TTCfDUlPfqQ.png",
   },
   {
     name: "Register Growing Plant",
     role: "CNC DAO Growth Monitoring Specialist",
     quote: "What you don't measure in growth, you lose in yield.",
+    image: "https://framerusercontent.com/images/F6LGyJNRpfvDLJ79kRvUR1gD7E.jpg",
   },
   {
     name: "Nature Hero",
     role: "Real Live Tree Validator",
     quote: "Nature rewards only what is checked, corrected, and cared for.",
+    image: "https://framerusercontent.com/images/Na4ol9oHoDxENWivoo6SNnhPo.png",
   },
 ]
 
@@ -171,7 +179,11 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#030303]/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-4 md:px-16">
           <Link href="#hero" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-[#1db954]" />
+            <img
+              src="https://framerusercontent.com/images/XkdqyILHzud8shJDghKw5DhZuw.png"
+              alt="CNC DAO"
+              className="h-6 w-6 object-cover"
+            />
             <span className="text-lg font-medium tracking-[-0.02em]">
               CNCDAO
             </span>
@@ -298,7 +310,9 @@ export default function Home() {
                   </h3>
                   <p className="text-white/60">{block.body}</p>
                 </div>
-                <div className="aspect-[4:3] flex-1 rounded-xl bg-white/5" />
+                <div className="relative aspect-[4/3] flex-1 overflow-hidden rounded-xl bg-white/5">
+                  <img src={block.image} alt={block.heading} className="h-full w-full object-cover" />
+                </div>
               </div>
             ))}
           </div>
@@ -397,15 +411,17 @@ export default function Home() {
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="flex min-h-[340px] flex-col justify-end rounded-xl bg-white/5 p-9"
+              className="relative flex min-h-[340px] flex-col justify-end overflow-hidden rounded-xl p-9"
             >
+              <img src={t.image} alt={t.name} className="absolute inset-0 h-full w-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
               {/* Original site used "Satoshi" here (a Fontshare font, not on
                   Google Fonts) — using Syne as the closest loaded match.
                   Swap in Satoshi via @font-face if you want an exact match. */}
-              <p className="mb-6 font-[family-name:var(--font-syne)] text-xl font-bold leading-snug">
+              <p className="relative z-10 mb-6 font-[family-name:var(--font-syne)] text-xl font-bold leading-snug">
                 &ldquo;{t.quote}&rdquo;
               </p>
-              <div className="text-sm">
+              <div className="relative z-10 text-sm">
                 <div className="font-bold">{t.name}</div>
                 <div className="text-white/70">{t.role}</div>
               </div>
@@ -431,18 +447,21 @@ export default function Home() {
 
           <div className="mb-10 grid grid-cols-1 gap-4 text-left sm:grid-cols-3">
             <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18]">
+              <IconGPS className="mb-3 h-9 w-9" />
               <div className="mb-1 font-medium">GPS-verified coordinates</div>
               <div className="text-sm text-[#7a7870]">
                 Every tree is pinned to exact GPS location submitted at registration
               </div>
             </div>
             <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18]">
+              <IconRealtime className="mb-3 h-9 w-9" />
               <div className="mb-1 font-medium">Real-time updates</div>
               <div className="text-sm text-[#7a7870]">
                 New trees appear as soon as 2-of-2 validation is complete
               </div>
             </div>
             <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18]">
+              <IconOnChain className="mb-3 h-9 w-9" />
               <div className="mb-1 font-medium">On-chain proof for every pin</div>
               <div className="text-sm text-[#7a7870]">
                 Click any tree to view its Solana transaction and IPFS metadata
@@ -467,7 +486,13 @@ export default function Home() {
       {/* ---------- NFT Identity ---------- */}
       <section id="nft" className="border-t border-white/5 bg-[#2d6a30] px-6 py-24 text-[#1a1a18] md:px-16">
         <div className="mx-auto grid max-w-[1120px] grid-cols-1 items-center gap-16 md:grid-cols-2">
-          <div className="aspect-[2/3] rounded-2xl bg-black/10" />
+          <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-black/10">
+            <img
+              src="https://framerusercontent.com/images/odRAuUOqKFeuQhtEcL2UFFCIo.png"
+              alt="Example CNC DAO tree NFT certificate"
+              className="h-full w-full object-cover"
+            />
+          </div>
           <div>
             <p className="mb-2 font-[family-name:var(--font-syne)] text-lg font-extrabold text-[#f9f6ef]">
               NFT Identity
@@ -484,7 +509,7 @@ export default function Home() {
             <div className="mb-10 flex flex-col gap-5">
               {nftPoints.map((p) => (
                 <div key={p.title} className="flex gap-4">
-                  <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-[#1a1a18]" />
+                  <IconCheck className="h-6 w-6 flex-shrink-0" />
                   <div>
                     <div className="mb-1 font-[family-name:var(--font-syne)] text-[15px] font-semibold tracking-[-0.02em] text-[#1a1a18]">
                       {p.title}
@@ -506,7 +531,11 @@ export default function Home() {
         <div className="mx-auto flex max-w-[1200px] flex-col gap-14 md:flex-row md:justify-between">
           <div className="max-w-xs">
             <div className="mb-4 flex items-center gap-2">
-              <div className="h-6 w-6 rounded-full bg-[#1db954]" />
+              <img
+                src="https://framerusercontent.com/images/XkdqyILHzud8shJDghKw5DhZuw.png"
+                alt="CNC DAO"
+                className="h-5 w-5 object-cover"
+              />
               <span className="text-lg font-medium tracking-[-0.02em]">
                 CNCDAO
               </span>
@@ -515,12 +544,17 @@ export default function Home() {
               Every tree, verified and on record.
             </p>
             <div className="flex gap-2">
-              {["LinkedIn", "X", "Instagram", "Facebook", "YouTube"].map((s) => (
-                <div
+              {(["linkedin", "x", "instagram", "facebook", "youtube"] as const).map((s) => (
+                <a
                   key={s}
                   aria-label={s}
-                  className="h-8 w-8 rounded-lg bg-white/10"
-                />
+                  href={`https://${s === "x" ? "x" : s}.com`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/80 hover:bg-white/20"
+                >
+                  <SocialIcon name={s} className="h-4 w-4" />
+                </a>
               ))}
             </div>
           </div>

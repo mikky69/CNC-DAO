@@ -1,4 +1,5 @@
 import Link from "next/link"
+import TreeMap from "@/components/TreeMap"
 
 /**
  * CNC DAO — Homepage
@@ -456,10 +457,10 @@ export default function Home() {
             Explore the Map
           </Link>
 
-          {/* The map itself: the live site has a working interactive map/registry
-              widget (canvas-based, with cluster pins, filters, and a tree list
-              sidebar). That's substantial enough to be its own component —
-              worth porting separately rather than inlining here. */}
+          {/* Live registry map, ported from the site's real interactive widget */}
+          <div className="h-[600px] overflow-hidden rounded-2xl border border-white/10">
+            <TreeMap />
+          </div>
         </div>
       </section>
 

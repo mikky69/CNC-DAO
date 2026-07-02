@@ -1,6 +1,7 @@
 import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
 import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
+import { RotatingLogos, StarSphere } from "@/components/Visuals"
 
 /**
  * CNC DAO — Homepage
@@ -195,18 +196,25 @@ export default function Home() {
             <Link href="#nft">NFT</Link>
             <Link href="/nature-heroes">Nature Heroes</Link>
           </nav>
-          <Link
-            href="/tree-reg"
-            className="rounded-full bg-white px-5 py-2.5 text-sm font-medium text-[#0b0a12]"
+          <button
+            className="rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white"
           >
-            Plant a Tree
-          </Link>
+            Connect Wallet
+          </button>
         </div>
       </header>
 
       {/* ---------- Hero ---------- */}
       <section id="hero" className="relative overflow-hidden px-6 pb-24 pt-20 md:px-16 md:pt-32">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(45,106,49,0.35),transparent_60%)]" />
+        {/* Green light-beam rays behind the hero, ported from the source
+            site's "Lights" decoration (vertical radial-gradient bars) */}
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-80" aria-hidden="true">
+          <div className="absolute left-[46%] top-[-30%] h-[130%] w-[20px] rotate-[-14deg] bg-[radial-gradient(50%_50%,#2d6a31_0%,transparent_100%)] opacity-30" />
+          <div className="absolute left-[50%] top-[-30%] h-[130%] w-[20px] bg-[radial-gradient(50%_50%,#2d6a31_0%,transparent_100%)] opacity-30" />
+          <div className="absolute left-[53%] top-[-30%] h-[110%] w-[11px] bg-[radial-gradient(50%_50%,#2d6a31_0%,transparent_100%)] opacity-20" />
+          <div className="absolute bottom-0 left-0 right-0 h-[300px] bg-[radial-gradient(50%_50%,#2d6a31_0%,transparent_100%)] opacity-25" />
+        </div>
         <img
           src="https://framerusercontent.com/images/mRLVTvuN46hVjqnB9DPdYH8RXUY.png"
           alt=""
@@ -238,12 +246,10 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Ecosystem badge — simplified from the original multi-chain carousel
-              since the product only runs on Solana */}
-          <div className="mt-6 flex items-center gap-2 text-xs uppercase tracking-widest text-white/40">
-            <span className="h-2 w-2 rounded-full bg-[#1db954]" />
-            Built on Solana
-          </div>
+          <p className="mt-14 text-center text-xs uppercase tracking-widest text-white/40">
+            Supported by Solana
+          </p>
+          <RotatingLogos size={220} />
         </div>
       </section>
 
@@ -276,9 +282,15 @@ export default function Home() {
                 <h3 className="mb-2 font-[family-name:var(--font-syne)] text-xl font-bold tracking-[-0.02em]">
                   {s.title}
                 </h3>
-                <p className="text-sm text-white/60">{s.body}</p>
-              </div>
             ))}
+          </div>
+
+          {/* Glowing green "shelf" light beneath the step cards, ported from
+              the source site's "Highlights" decoration */}
+          <div className="relative mt-2 h-16" aria-hidden="true">
+            <div className="absolute left-1/2 top-0 h-12 w-[90%] -translate-x-1/2 rounded-full bg-[#a9f5ae] opacity-10 blur-[64px]" />
+            <div className="absolute left-1/2 top-2 h-4 w-[85%] -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-[#2d6a31] to-transparent opacity-40 blur-[20px]" />
+            <div className="absolute left-1/2 top-3 h-2 w-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-[#2d6a31] to-transparent opacity-80 blur-[10px]" />
           </div>
         </div>
       </section>
@@ -486,6 +498,14 @@ export default function Home() {
           {/* Live registry map, ported from the site's real interactive widget */}
           <div className="h-[600px] overflow-hidden rounded-2xl border border-white/10">
             <TreeMap />
+          </div>
+
+          {/* Particle sphere visual — approximates the canvas/WebGL "tree
+              among stars" visual from the source site (that scene's JS logic
+              isn't recoverable from static markup, this is a canvas particle
+              field in the same green/white palette and circular mask) */}
+          <div className="relative mx-auto mt-16 h-[500px] w-full max-w-[700px]">
+            <StarSphere className="h-full w-full" />
           </div>
         </div>
       </section>

@@ -90,6 +90,7 @@ export function StepIcon({ step, className = "" }: { step: 1 | 2 | 3 | 4 | 5 | 6
     </svg>
   )
 }
+export function IconArrow({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className}>
       <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

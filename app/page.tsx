@@ -131,7 +131,7 @@ export default function HomePage() {
                   <span className="font-[family-name:var(--font-space-mono)] text-3xl font-bold text-white/20 group-hover:text-[#f5a800]/40 transition-colors">
                     {s.n}
                   </span>
-                  <StepIcon n={parseInt(s.n)} className="h-8 w-8 text-[#f5a800]" />
+                  <StepIcon step={parseInt(s.n) as 1 | 2 | 3 | 4 | 5 | 6} className="h-8 w-8 text-[#f5a800]" />
                 </div>
                 <h3 className="font-[family-name:var(--font-dm-sans)] text-lg font-bold text-white mb-2">
                   {s.title}

@@ -44,7 +44,7 @@ export default function SeedToCertificate() {
               )}
               <div className="flex flex-col items-start">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-[#0a0a0a] mb-6">
-                  <StepIcon n={s.n} className="h-8 w-8" />
+                  <StepIcon step={s.n as 1 | 2 | 3 | 4} className="h-8 w-8" />
                 </div>
                 <span className="font-[family-name:var(--font-space-mono)] text-xs text-[#f5a800] mb-2">
                   STEP {s.n}

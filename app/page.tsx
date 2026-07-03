@@ -1,4 +1,4 @@
-[7/3/2026 11:04 AM] Engr. Mikailu: import Link from "next/link"
+import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
 import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
 import { RotatingLogos } from "@/components/Visuals"
@@ -64,7 +64,7 @@ const steps = [
     body: "If the tree survives, mint a proof-of-stewardship certificate on Solana. Your permanent environmental record.",
   },
 ]
-[7/3/2026 11:04 AM] Engr. Mikailu: const whyWeExist = [
+const whyWeExist = [
   {
     tags: ["Community-led", "GPS-verified"],
     heading: "Communities are planting. Nobody is counting.",
@@ -128,7 +128,7 @@ const howItWorks = [
   { n: "3", body: "2 Nature Hero Live Verification" },
   { n: "4", body: "NFT mint" },
 ]
-[7/3/2026 11:04 AM] Engr. Mikailu: const testimonials = [
+const testimonials = [
   {
     name: "Planting",
     role: "CNC DAO Planting Operator",
@@ -202,7 +202,7 @@ export default function Home() {
           </button>
         </div>
       </header>
-[7/3/2026 11:04 AM] Engr. Mikailu: {/* ---------- Hero ---------- */}
+{/* ---------- Hero ---------- */}
       <section id="hero" className="relative overflow-hidden px-6 pb-24 pt-20 md:px-16 md:pt-32">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(45,106,49,0.35),transparent_60%)]" />
         {/* Green light-beam rays behind the hero, ported from the source
@@ -266,7 +266,7 @@ export default function Home() {
             Six steps from tree in the ground to proof on-chain. No crypto knowledge
             required to get started.
           </p>
-[7/3/2026 11:04 AM] Engr. Mikailu: <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+<div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {steps.map((s, i) => (
               <div
                 key={s.n}
@@ -348,7 +348,7 @@ export default function Home() {
             that a tree was actually planted, actually verified, and actually
             survives.
           </p>
-[7/3/2026 11:04 AM] Engr. Mikailu: <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((f) => (
               <div
                 key={f.title}
@@ -421,7 +421,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-[7/3/2026 11:04 AM] Engr. Mikailu: {/* ---------- Testimonials ---------- */}
+ {/* ---------- Testimonials ---------- */}
       <section className="px-6 py-24 md:px-16">
         <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-5 md:grid-cols-3">
           {testimonials.map((t) => (
@@ -496,7 +496,7 @@ export default function Home() {
           <div className="h-[600px] overflow-hidden rounded-2xl border border-white/10">
             <TreeMap />
           </div>
-[7/3/2026 11:04 AM] Engr. Mikailu: {/* Particle sphere visual, cursor-reactive Fibonacci-sphere particle
+ {/* Particle sphere visual, cursor-reactive Fibonacci-sphere particle
               system standing in for the source site's WebGL "tree among
               stars" canvas */}
           <div
@@ -569,7 +569,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-[7/3/2026 11:04 AM] Engr. Mikailu: {/* ---------- Footer ---------- */}
+ {/* ---------- Footer ---------- */}
       <footer className="border-t border-white/10 px-6 py-16 md:px-16">
         <div className="mx-auto flex max-w-[1200px] flex-col gap-14 md:flex-row md:justify-between">
           <div className="max-w-xs">

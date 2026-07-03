@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
 import Navbar from "@/components/Navbar"

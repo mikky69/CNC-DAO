@@ -1,7 +1,8 @@
 import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
 import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
-import { RotatingLogos, StarSphere } from "@/components/Visuals"
+import { RotatingLogos } from "@/components/Visuals"
+import ParticleSphere from "@/components/ParticleSphere"
 
 /**
  * CNC DAO — Homepage
@@ -502,27 +503,48 @@ export default function Home() {
             <TreeMap />
           </div>
 
-          {/* Particle sphere visual — approximates the canvas/WebGL "tree
-              among stars" visual from the source site (that scene's JS logic
-              isn't recoverable from static markup, this is a canvas particle
-              field in the same green/white palette and circular mask) */}
-          <div className="relative mx-auto mt-16 h-[500px] w-full max-w-[700px]">
-            <StarSphere className="h-full w-full" />
+          {/* Particle sphere visual, cursor-reactive Fibonacci-sphere particle
+              system standing in for the source site's WebGL "tree among
+              stars" canvas */}
+          <div
+            className="relative mx-auto mt-16 h-[500px] w-full max-w-[700px]"
+            style={{
+              WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 60%, transparent 72%)",
+              maskImage: "radial-gradient(circle at 50% 50%, black 60%, transparent 72%)",
+            }}
+          >
+            <ParticleSphere
+              particleCount={2200}
+              particleSize={1.6}
+              colors={["#2d6a31", "#22c55e", "#a9f5ae", "#ffffff"]}
+              speed={0.25}
+              cursorRadius={110}
+              clickForce={35}
+              clickEffect="both"
+              trails
+              trailLength={0.85}
+              background="#0b0a12"
+              radius={190}
+            />
           </div>
         </div>
       </section>
 
       {/* ---------- NFT Identity ---------- */}
-      <section id="nft" className="border-t border-white/5 bg-[#2d6a30] px-6 py-24 text-[#1a1a18] md:px-16">
-        <div className="mx-auto grid max-w-[1120px] grid-cols-1 items-center gap-16 md:grid-cols-2">
-          <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-black/10">
+      <section id="nft" className="relative overflow-hidden border-t border-white/5 bg-[#2d6a30] text-[#1a1a18]">
+        <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-end gap-10 md:grid-cols-2 md:gap-0">
+          {/* Image bleeds toward the section's edge rather than sitting in a
+              centered box, matching the original's asymmetric composition */}
+          <div className="relative order-2 h-[380px] md:order-1 md:-ml-10 md:h-[620px] lg:-ml-24">
             <img
               src="https://framerusercontent.com/images/odRAuUOqKFeuQhtEcL2UFFCIo.png"
               alt="Example CNC DAO tree NFT certificate"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover object-bottom md:rounded-tr-2xl"
             />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2d6a30] via-transparent to-transparent md:bg-gradient-to-r" />
           </div>
-          <div>
+
+          <div className="order-1 px-6 py-16 md:order-2 md:px-16 md:py-24">
             <p className="mb-2 font-[family-name:var(--font-syne)] text-lg font-extrabold text-[#f9f6ef]">
               NFT Identity
             </p>
@@ -530,7 +552,7 @@ export default function Home() {
               Not a collectible.
               <br />A certificate.
             </h2>
-            <p className="mb-10 text-[#ede8dc]">
+            <p className="mb-10 max-w-md text-[#ede8dc]">
               Your tree NFT is a permanent proof of stewardship, not speculation. It
               contains verified data, validator signatures, and a permanent link to
               the tree&rsquo;s on-chain record.

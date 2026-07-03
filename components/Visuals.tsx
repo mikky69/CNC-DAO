@@ -1,7 +1,5 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-
 /**
  * RotatingLogos — approximates the 3D rotating badge under "Supported by
  * Solana" on the source site (a WebGL/Three.js canvas carousel of chain
@@ -47,91 +45,7 @@ export function RotatingLogos({ size = 260 }: { size?: number }) {
 }
 
 /**
- * StarSphere — approximates the particle/star visual in the Global Registry
- * section of the source site (a masked, radial-faded WebGL canvas, likely a
- * particle sphere or tree-shaped point cloud). Same caveat: the real
- * Three.js scene isn't recoverable from static markup, this is a canvas
- * particle-field equivalent in the same green/white palette and circular
- * radial mask as the original.
+ * Note: the particle "tree among stars" visual now lives in
+ * components/ParticleSphere.jsx (a real cursor-reactive Fibonacci-sphere
+ * particle system), not here.
  */
-export function StarSphere({ className = "" }: { className?: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-
-    let raf = 0
-    let w = 0
-    let h = 0
-
-    type Particle = { theta: number; phi: number; r: number; speed: number; size: number; green: boolean }
-    const particles: Particle[] = Array.from({ length: 260 }, () => ({
-      theta: Math.random() * Math.PI * 2,
-      phi: Math.acos(Math.random() * 2 - 1),
-      r: 0.6 + Math.random() * 0.4,
-      speed: 0.0015 + Math.random() * 0.002,
-      size: 0.6 + Math.random() * 1.6,
-      green: Math.random() > 0.4,
-    }))
-
-    function resize() {
-      const parent = canvas!.parentElement
-      if (!parent) return
-      w = canvas!.width = parent.clientWidth
-      h = canvas!.height = parent.clientHeight
-    }
-    resize()
-    window.addEventListener("resize", resize)
-
-    function draw() {
-      ctx!.clearRect(0, 0, w, h)
-      const cx = w / 2
-      const cy = h / 2
-      const R = Math.min(w, h) * 0.42
-
-      const sorted = [...particles].sort((a, b) => Math.sin(a.phi) - Math.sin(b.phi))
-
-      for (const p of sorted) {
-        p.theta += p.speed
-        const x = Math.sin(p.phi) * Math.cos(p.theta)
-        const y = Math.cos(p.phi)
-        const z = Math.sin(p.phi) * Math.sin(p.theta)
-        const scale = (z + 1.4) / 2.4
-        const px = cx + x * R * p.r
-        const py = cy + y * R * p.r
-        const size = p.size * scale
-        const alpha = 0.25 + scale * 0.75
-
-        ctx!.beginPath()
-        ctx!.arc(px, py, size, 0, Math.PI * 2)
-        ctx!.fillStyle = p.green
-          ? `rgba(45, 200, 90, ${alpha})`
-          : `rgba(255, 255, 255, ${alpha * 0.8})`
-        ctx!.fill()
-      }
-
-      raf = requestAnimationFrame(draw)
-    }
-    draw()
-
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener("resize", resize)
-    }
-  }, [])
-
-  return (
-    <div
-      className={className}
-      style={{
-        WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 60%, transparent 70%)",
-        maskImage: "radial-gradient(circle at 50% 50%, black 60%, transparent 70%)",
-      }}
-    >
-      <canvas ref={canvasRef} className="h-full w-full" />
-    </div>
-  )
-}

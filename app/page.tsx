@@ -3,7 +3,6 @@ import TreeMap from "@/components/TreeMap"
 import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
 import { LogoMarquee } from "@/components/Visuals"
 import ParticleSphere from "@/components/ParticleSphere"
-import ParticleSphere from "@/components/ParticleSphere"
 
 /**
  * CNC DAO — Homepage

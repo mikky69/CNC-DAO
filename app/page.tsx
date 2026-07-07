@@ -1,7 +1,8 @@
 import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
 import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
-import { RotatingLogos } from "@/components/Visuals"
+import { LogoMarquee } from "@/components/Visuals"
+import ParticleSphere from "@/components/ParticleSphere"
 import ParticleSphere from "@/components/ParticleSphere"
 
 /**
@@ -216,12 +217,6 @@ export default function Home() {
           <div className="absolute left-[53%] top-[-30%] h-[110%] w-[11px] bg-[radial-gradient(50%_50%,#2d6a31_0%,transparent_100%)] opacity-20" />
           <div className="absolute bottom-0 left-0 right-0 h-[300px] bg-[radial-gradient(50%_50%,#2d6a31_0%,transparent_100%)] opacity-25" />
         </div>
-        <img
-          src="https://framerusercontent.com/images/mRLVTvuN46hVjqnB9DPdYH8RXUY.png"
-          alt=""
-          aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-1/2 -z-10 w-[300px] -translate-x-1/2 -translate-y-1/2 opacity-50 md:w-[420px]"
-        />
         <div className="mx-auto flex max-w-[1120px] flex-col items-center gap-8 text-center">
           <h1 className="font-[family-name:var(--font-dm-sans)] text-[36px] font-medium leading-[1.1] tracking-[-0.02em] md:text-[64px]">
             Every Tree Verified <br className="hidden md:block" />
@@ -246,12 +241,35 @@ export default function Home() {
               View Map <IconArrow className="h-4 w-4 rotate-45" />
             </Link>
           </div>
-
-          <p className="mt-14 text-center text-xs uppercase tracking-widest text-white/40">
-            Supported by Solana
-          </p>
-          <RotatingLogos size={220} />
         </div>
+      </section>
+
+      {/* ---------- Supported by Solana: tree + particle sphere + ticker ---------- */}
+      <section className="px-6 pb-20 md:px-16">
+        <p className="mb-8 text-center text-xs uppercase tracking-widest text-white/40">
+          Supported by Solana
+        </p>
+        <div className="relative mx-auto mb-14 h-[380px] w-full max-w-[560px] md:h-[560px]">
+          <img
+            src="https://framerusercontent.com/images/mRLVTvuN46hVjqnB9DPdYH8RXUY.png"
+            alt="Tree"
+            className="absolute left-1/2 top-1/2 h-[70%] w-[70%] -translate-x-1/2 -translate-y-1/2 object-contain"
+          />
+          <ParticleSphere
+            particleCount={1800}
+            particleSize={1.4}
+            colors={["#a9f5ae", "#22c55e", "#ffffff"]}
+            speed={0.18}
+            cursorRadius={110}
+            clickForce={30}
+            clickEffect="scatter"
+            trails={false}
+            transparent
+            background="#0b0a12"
+            radius={190}
+          />
+        </div>
+        <LogoMarquee />
       </section>
 
       {/* ---------- The Process ---------- */}
@@ -501,31 +519,6 @@ export default function Home() {
           {/* Live registry map, ported from the site's real interactive widget */}
           <div className="h-[600px] overflow-hidden rounded-2xl border border-white/10">
             <TreeMap />
-          </div>
-
-          {/* Particle sphere visual, cursor-reactive Fibonacci-sphere particle
-              system standing in for the source site's WebGL "tree among
-              stars" canvas */}
-          <div
-            className="relative mx-auto mt-16 h-[500px] w-full max-w-[700px]"
-            style={{
-              WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 60%, transparent 72%)",
-              maskImage: "radial-gradient(circle at 50% 50%, black 60%, transparent 72%)",
-            }}
-          >
-            <ParticleSphere
-              particleCount={2200}
-              particleSize={1.6}
-              colors={["#2d6a31", "#22c55e", "#a9f5ae", "#ffffff"]}
-              speed={0.25}
-              cursorRadius={110}
-              clickForce={35}
-              clickEffect="both"
-              trails
-              trailLength={0.85}
-              background="#0b0a12"
-              radius={190}
-            />
           </div>
         </div>
       </section>

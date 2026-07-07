@@ -33,6 +33,7 @@ export default function ParticleSphere({
   trailLength = 0.85,
   background = "#0A0A0B",
   radius = 180,
+  transparent = false,
 }) {
   const canvasRef = useRef(null);
   const particlesRef = useRef([]);
@@ -144,7 +145,9 @@ export default function ParticleSphere({
       if (fadeInRef.current < 1) fadeInRef.current += 0.02;
 
       // Trails: draw a translucent rect instead of clearing fully
-      if (trails) {
+      if (transparent) {
+        ctx.clearRect(0, 0, width, height);
+      } else if (trails) {
         ctx.fillStyle = hexToRgba(background, 1 - trailLength);
         ctx.fillRect(0, 0, width, height);
       } else {
@@ -247,6 +250,7 @@ export default function ParticleSphere({
     radius,
     particleSize,
     colors,
+    transparent,
   ]);
 
   return (

@@ -49,3 +49,42 @@ export function RotatingLogos({ size = 260 }: { size?: number }) {
  * components/ParticleSphere.jsx (a real cursor-reactive Fibonacci-sphere
  * particle system), not here.
  */
+
+/**
+ * LogoMarquee — horizontal infinite-scroll ticker of chain logos, matching
+ * the real site's ecosystem strip under "Supported by Solana".
+ */
+const marqueeLogos = [
+  { name: "Solana", src: "https://framerusercontent.com/images/wgurUfRKKpRChq302kw3Zg847uU.png" },
+  { name: "Ethereum", src: "https://framerusercontent.com/images/rfz9YzkJxaakxQgkWlFsPF1Quw.png" },
+  { name: "Stacks", src: "https://framerusercontent.com/images/k3VOE2JemS6d7WsCYjctHWZVKs.png" },
+  { name: "Cosmos", src: "https://framerusercontent.com/images/LfZmguZXMsGFe4QFS6Dnj5krylQ.png" },
+  { name: "Elrond", src: "https://framerusercontent.com/images/OfyushOZ5EH2nzGCONguxXtLHzg.png" },
+  { name: "Polygon", src: "https://framerusercontent.com/images/ZTwbMMIvP3dThXnt1HfxnzZ0Wls.png" },
+]
+
+export function LogoMarquee() {
+  const loop = [...marqueeLogos, ...marqueeLogos]
+  return (
+    <div
+      className="w-full overflow-hidden"
+      style={{
+        WebkitMaskImage:
+          "linear-gradient(to right, transparent 0%, black 12.5%, black 87.5%, transparent 100%)",
+        maskImage:
+          "linear-gradient(to right, transparent 0%, black 12.5%, black 87.5%, transparent 100%)",
+      }}
+    >
+      <div className="flex w-max animate-[marquee_22s_linear_infinite] items-center gap-14">
+        {loop.map((logo, i) => (
+          <img
+            key={`${logo.name}-${i}`}
+            src={logo.src}
+            alt={logo.name}
+            className="h-8 w-auto flex-shrink-0 object-contain opacity-70"
+          />
+        ))}
+      </div>
+    </div>
+  )
+}

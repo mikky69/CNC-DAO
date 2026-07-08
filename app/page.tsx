@@ -582,7 +582,7 @@ export default function Home() {
       </section>
 
       {/* ---------- Global network globe ---------- */}
-      <section className="border-t border-white/5 bg-black px-6 py-24 md:px-16">
+      <section className="border-t border-white/5 bg-[#0b0a12] px-6 py-24 md:px-16">
         <Reveal>
           <div className="mx-auto max-w-[1120px] text-center">
             <h2 className="mb-4 font-[family-name:var(--font-dm-sans)] text-[24px] font-medium tracking-[-0.02em] md:text-[40px]">

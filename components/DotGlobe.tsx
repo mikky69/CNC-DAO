@@ -77,23 +77,16 @@ export default function DotGlobe({ className = "" }: { className?: string }) {
 
       rotation += 0.06
 
-      // glow ring behind everything
-      const glow = ctx!.createRadialGradient(cx, cy, R * 0.85, cx, cy, R * 1.35)
-      glow.addColorStop(0, "rgba(255,255,255,0.18)")
-      glow.addColorStop(1, "rgba(255,255,255,0)")
-      ctx!.fillStyle = glow
-      ctx!.beginPath()
-      ctx!.arc(cx, cy, R * 1.35, 0, Math.PI * 2)
-      ctx!.fill()
-
-      // outline ring
+      // outline ring — the glow comes from the stroke's own shadow blur,
+      // not a separate fill, so it can never show a hard rectangular edge
       ctx!.beginPath()
       ctx!.arc(cx, cy, R, 0, Math.PI * 2)
-      ctx!.strokeStyle = "rgba(255,255,255,0.9)"
-      ctx!.lineWidth = 1.2
-      ctx!.shadowColor = "rgba(255,255,255,0.8)"
-      ctx!.shadowBlur = 12
+      ctx!.strokeStyle = "rgba(255,255,255,0.95)"
+      ctx!.lineWidth = 1.4
+      ctx!.shadowColor = "rgba(255,255,255,0.95)"
+      ctx!.shadowBlur = 22
       ctx!.stroke()
+      ctx!.stroke() // second pass deepens the glow without widening the line
       ctx!.shadowBlur = 0
 
       // land dots
@@ -133,7 +126,13 @@ export default function DotGlobe({ className = "" }: { className?: string }) {
   }, [landPoints])
 
   return (
-    <div className={className}>
+    <div
+      className={className}
+      style={{
+        WebkitMaskImage: "radial-gradient(circle at 50% 50%, black 62%, transparent 78%)",
+        maskImage: "radial-gradient(circle at 50% 50%, black 62%, transparent 78%)",
+      }}
+    >
       <canvas ref={canvasRef} className="h-full w-full" />
     </div>
   )

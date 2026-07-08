@@ -3,6 +3,8 @@ import TreeMap from "@/components/TreeMap"
 import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
 import { LogoMarquee } from "@/components/Visuals"
 import ParticleSphere from "@/components/ParticleSphere"
+import DotGlobe from "@/components/DotGlobe"
+import { Reveal } from "@/components/Reveal"
 
 /**
  * CNC DAO — Homepage
@@ -198,7 +200,7 @@ export default function Home() {
             <Link href="/nature-heroes">Nature Heroes</Link>
           </nav>
           <button
-            className="rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white"
+            className="rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105"
           >
             Connect Wallet
           </button>
@@ -207,6 +209,7 @@ export default function Home() {
 
       {/* ---------- Hero ---------- */}
       <section id="hero" className="relative overflow-hidden px-6 pb-24 pt-20 md:px-16 md:pt-32">
+        <Reveal>
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_0%,rgba(45,106,49,0.35),transparent_60%)]" />
         {/* Green light-beam rays behind the hero, ported from the source
             site's "Lights" decoration (vertical radial-gradient bars) */}
@@ -229,22 +232,23 @@ export default function Home() {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href="/tree-reg"
-              className="flex items-center gap-2 rounded-full bg-[#1db954] px-6 py-3 text-sm font-medium"
+              className="flex items-center gap-2 rounded-full bg-[#1db954] px-6 py-3 text-sm font-medium transition-transform duration-200 hover:scale-105"
             >
               Plant a Tree <IconArrow className="h-4 w-4 rotate-45" />
             </Link>
             <Link
               href="/map"
-              className="flex items-center gap-2 rounded-full bg-white/95 px-6 py-3 text-sm font-medium text-[#0b0a12]"
+              className="flex items-center gap-2 rounded-full bg-white/95 px-6 py-3 text-sm font-medium text-[#0b0a12] transition-transform duration-200 hover:scale-105"
             >
               View Map <IconArrow className="h-4 w-4 rotate-45" />
             </Link>
           </div>
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- Supported by Solana: tree + particle sphere + ticker ---------- */}
       <section className="px-6 pb-20 md:px-16">
+        <Reveal>
         <p className="mb-8 text-center text-xs uppercase tracking-widest text-white/40">
           Supported by Solana
         </p>
@@ -268,11 +272,12 @@ export default function Home() {
             radius={190}
           />
         </div>
-        <LogoMarquee />
+        <LogoMarquee /></Reveal>
       </section>
 
       {/* ---------- The Process ---------- */}
       <section className="border-t border-white/5 bg-[#0d0d0d] px-6 py-24 md:px-16">
+        <Reveal>
         <div className="mx-auto max-w-[1120px]">
           <p className="mb-4 text-center font-[family-name:var(--font-space-mono)] text-xs font-bold uppercase tracking-[0.15em] text-[#f0a830]">
             The Process
@@ -291,7 +296,7 @@ export default function Home() {
             {steps.map((s, i) => (
               <div
                 key={s.n}
-                className="rounded-xl border border-white/10 bg-[#08080f] p-6"
+                className="group rounded-xl border border-white/10 bg-[#08080f] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-[#0c0c15]"
               >
                 <StepIcon step={(i + 1) as 1 | 2 | 3 | 4 | 5 | 6} className="mb-4 h-12 w-12" />
                 <span className="mb-4 block font-[family-name:var(--font-space-mono)] text-xs font-bold text-[#f0a830]">
@@ -312,11 +317,12 @@ export default function Home() {
             <div className="absolute left-1/2 top-2 h-4 w-[85%] -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-[#2d6a31] to-transparent opacity-40 blur-[20px]" />
             <div className="absolute left-1/2 top-3 h-2 w-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-transparent via-[#2d6a31] to-transparent opacity-80 blur-[10px]" />
           </div>
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- Why We Exist ---------- */}
       <section id="overview" className="px-6 py-24 md:px-16">
+        <Reveal>
         <div className="mx-auto max-w-[1120px]">
           <h2 className="mb-4 text-center font-[family-name:var(--font-dm-sans)] text-[24px] font-medium tracking-[-0.02em] md:text-[40px]">
             Why We Exist
@@ -349,17 +355,18 @@ export default function Home() {
                   </h3>
                   <p className="text-white/60">{block.body}</p>
                 </div>
-                <div className="relative aspect-[4/3] flex-1 overflow-hidden rounded-xl bg-white/5">
-                  <img src={block.image} alt={block.heading} className="h-full w-full object-cover" />
+                <div className="group relative aspect-[4/3] flex-1 overflow-hidden rounded-xl bg-white/5">
+                  <img src={block.image} alt={block.heading} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- Features (replaces the crypto-trading feature grid) ---------- */}
       <section id="benefits" className="px-6 py-24 md:px-16">
+        <Reveal>
         <div className="mx-auto max-w-[1120px]">
           <h2 className="mb-4 text-center font-[family-name:var(--font-dm-sans)] text-[24px] font-medium tracking-[-0.02em] md:text-[40px]">
             Built for verification, not speculation
@@ -374,7 +381,7 @@ export default function Home() {
             {features.map((f) => (
               <div
                 key={f.title}
-                className="rounded-xl border border-white/5 bg-[#08080f] p-6"
+                className="group rounded-xl border border-white/5 bg-[#08080f] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#1db954]/40 hover:bg-[#0c0c15]"
               >
                 <h5 className="mb-2 font-[family-name:var(--font-dm-sans)] text-lg font-medium tracking-[-0.02em]">
                   {f.title}
@@ -383,11 +390,12 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- Registry stats (replaces the live crypto price ticker) ---------- */}
       <section className="px-6 py-24 md:px-16">
+        <Reveal>
         <div className="mx-auto max-w-[1120px]">
           <h2 className="mb-4 text-center font-[family-name:var(--font-dm-sans)] text-[24px] font-medium tracking-[-0.02em] md:text-[40px]">
             Keep Your Environment Secured On-Chain
@@ -399,7 +407,7 @@ export default function Home() {
             {registryStats.map((s) => (
               <div
                 key={s.label}
-                className="rounded-xl border border-white/10 bg-gradient-to-br from-[#08080f] to-[#12121c] p-6 text-center"
+                className="rounded-xl border border-white/10 bg-gradient-to-br from-[#08080f] to-[#12121c] p-6 text-center transition-all duration-300 hover:-translate-y-1 hover:border-white/20"
               >
                 <div className="font-[family-name:var(--font-space-mono)] text-2xl font-bold text-white">
                   {s.value}
@@ -408,11 +416,12 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- How it works ---------- */}
       <section id="how-it-works" className="px-6 py-24 md:px-16">
+        <Reveal>
         <div className="mx-auto max-w-[1008px]">
           <h2 className="mb-4 text-center font-[family-name:var(--font-dm-sans)] text-[24px] font-medium tracking-[-0.02em] md:text-[40px]">
             From seed to certificate
@@ -424,7 +433,7 @@ export default function Home() {
             {howItWorks.map((step) => (
               <div
                 key={step.n}
-                className="relative rounded-xl border border-[#1a3e1c] bg-[#05050a] p-6"
+                className="relative rounded-xl border border-[#1a3e1c] bg-[#05050a] p-6 transition-all duration-300 hover:-translate-y-1 hover:border-[#1db954]/50"
               >
                 <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full bg-[#2d6a31]/20">
                   <span className="text-lg font-medium">{step.n}</span>
@@ -436,23 +445,24 @@ export default function Home() {
           <div className="mt-10 flex justify-center">
             <Link
               href="/tree-reg"
-              className="rounded-full bg-white/95 px-6 py-3 text-sm font-medium text-[#0b0a12]"
+              className="rounded-full bg-white/95 px-6 py-3 text-sm font-medium text-[#0b0a12] transition-transform duration-200 hover:scale-105"
             >
               Plant Tree <IconArrow className="inline h-4 w-4 rotate-45" />
             </Link>
           </div>
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- Testimonials ---------- */}
       <section className="px-6 py-24 md:px-16">
+        <Reveal>
         <div className="mx-auto grid max-w-[1100px] grid-cols-1 gap-5 md:grid-cols-3">
           {testimonials.map((t) => (
             <div
               key={t.name}
-              className="relative flex min-h-[340px] flex-col justify-end overflow-hidden rounded-xl p-9"
+              className="group relative flex min-h-[340px] flex-col justify-end overflow-hidden rounded-xl p-9 transition-transform duration-500 hover:-translate-y-2"
             >
-              <img src={t.image} alt={t.name} className="absolute inset-0 h-full w-full object-cover" />
+              <img src={t.image} alt={t.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
               {/* Original site used "Satoshi" here (a Fontshare font, not on
                   Google Fonts) — using Syne as the closest loaded match.
@@ -466,11 +476,12 @@ export default function Home() {
               </div>
             </div>
           ))}
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- Global Registry / Map ---------- */}
       <section className="px-6 py-24 md:px-16">
+        <Reveal>
         <div className="mx-auto max-w-[1008px] text-center">
           <p className="mb-4 font-[family-name:var(--font-space-mono)] text-sm font-bold uppercase tracking-[0.12em] text-[#ede8dc]">
             Global Registry
@@ -485,21 +496,21 @@ export default function Home() {
           </p>
 
           <div className="mb-10 grid grid-cols-1 gap-4 text-left sm:grid-cols-3">
-            <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18]">
+            <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18] transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
               <IconGPS className="mb-3 h-9 w-9" />
               <div className="mb-1 font-medium">GPS-verified coordinates</div>
               <div className="text-sm text-[#7a7870]">
                 Every tree is pinned to exact GPS location submitted at registration
               </div>
             </div>
-            <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18]">
+            <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18] transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
               <IconRealtime className="mb-3 h-9 w-9" />
               <div className="mb-1 font-medium">Real-time updates</div>
               <div className="text-sm text-[#7a7870]">
                 New trees appear as soon as 2-of-2 validation is complete
               </div>
             </div>
-            <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18]">
+            <div className="rounded-2xl border border-[#ddd8ce] bg-[#f9f6ef] p-5 text-[#1a1a18] transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg">
               <IconOnChain className="mb-3 h-9 w-9" />
               <div className="mb-1 font-medium">On-chain proof for every pin</div>
               <div className="text-sm text-[#7a7870]">
@@ -510,7 +521,7 @@ export default function Home() {
 
           <Link
             href="/map"
-            className="inline-block rounded-full bg-[#1db954] px-9 py-3.5 text-sm font-medium"
+            className="inline-block rounded-full bg-[#1db954] px-9 py-3.5 text-sm font-medium transition-transform duration-200 hover:scale-105"
           >
             Explore the Map
           </Link>
@@ -519,11 +530,12 @@ export default function Home() {
           <div className="h-[600px] overflow-hidden rounded-2xl border border-white/10">
             <TreeMap />
           </div>
-        </div>
+        </div></Reveal>
       </section>
 
       {/* ---------- NFT Identity ---------- */}
       <section id="nft" className="relative overflow-hidden border-t border-white/5 bg-[#2d6a30] text-[#1a1a18]">
+        <Reveal>
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-end gap-10 md:grid-cols-2 md:gap-0">
           {/* Image bleeds toward the section's edge rather than sitting in a
               centered box, matching the original's asymmetric composition */}
@@ -551,7 +563,7 @@ export default function Home() {
             </p>
             <div className="mb-10 flex flex-col gap-5">
               {nftPoints.map((p) => (
-                <div key={p.title} className="flex gap-4">
+                <div key={p.title} className="flex gap-4 transition-transform duration-300 hover:translate-x-1">
                   <IconCheck className="h-6 w-6 flex-shrink-0" />
                   <div>
                     <div className="mb-1 font-[family-name:var(--font-syne)] text-[15px] font-semibold tracking-[-0.02em] text-[#1a1a18]">
@@ -562,11 +574,29 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <button className="rounded-full bg-[#f0a830] px-8 py-3 text-sm font-medium text-[#1a1a18]">
+            <button className="rounded-full bg-[#f0a830] px-8 py-3 text-sm font-medium text-[#1a1a18] transition-transform duration-200 hover:scale-105">
               See an Example NFT
             </button>
           </div>
-        </div>
+        </div></Reveal>
+      </section>
+
+      {/* ---------- Global network globe ---------- */}
+      <section className="border-t border-white/5 bg-black px-6 py-24 md:px-16">
+        <Reveal>
+          <div className="mx-auto max-w-[1120px] text-center">
+            <h2 className="mb-4 font-[family-name:var(--font-dm-sans)] text-[24px] font-medium tracking-[-0.02em] md:text-[40px]">
+              A planet-wide registry
+            </h2>
+            <p className="mx-auto mb-14 max-w-xl leading-[1.6] text-[#cccccc]">
+              Every highlighted point is a region with verified trees on-chain.
+              The network grows with every submission.
+            </p>
+            <div className="relative mx-auto h-[420px] w-full max-w-[560px] md:h-[560px]">
+              <DotGlobe className="h-full w-full" />
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* ---------- Footer ---------- */}

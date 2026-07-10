@@ -4,6 +4,7 @@ import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, Soc
 import { LogoMarquee } from "@/components/Visuals"
 import ParticleSphere from "@/components/ParticleSphere"
 import DotGlobe from "@/components/DotGlobe"
+import { MobileNav } from "@/components/MobileNav"
 import { Reveal } from "@/components/Reveal"
 
 /**
@@ -199,11 +200,14 @@ export default function Home() {
             <Link href="#nft">NFT</Link>
             <Link href="/nature-heroes">Nature Heroes</Link>
           </nav>
-          <button
-            className="rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105"
-          >
-            Connect Wallet
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              className="hidden rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105 md:block"
+            >
+              Connect Wallet
+            </button>
+            <MobileNav />
+          </div>
         </div>
       </header>
 
@@ -530,7 +534,22 @@ export default function Home() {
           <div className="h-[600px] overflow-hidden rounded-2xl border border-white/10">
             <TreeMap />
           </div>
+
+          {/* Rotating dot-matrix globe, same component as the one before the
+              footer, reused here to match the source site's layout */}
+          <div className="relative mx-auto mt-16 h-[420px] w-full max-w-[700px] md:h-[600px]">
+            <DotGlobe className="h-full w-full" />
+          </div>
         </div></Reveal>
+      </section>
+
+      {/* ---------- CNC DAO wordmark interstitial ---------- */}
+      <section className="relative overflow-hidden border-t border-white/5 bg-black py-24">
+        <Reveal>
+          <p className="animate-pulse text-center font-[family-name:var(--font-syne)] text-5xl font-extrabold tracking-tight text-white md:text-8xl">
+            CNC DAO
+          </p>
+        </Reveal>
       </section>
 
       {/* ---------- NFT Identity ---------- */}
@@ -538,12 +557,15 @@ export default function Home() {
         <Reveal>
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-end gap-10 md:grid-cols-2 md:gap-0">
           {/* Image bleeds toward the section's edge rather than sitting in a
-              centered box, matching the original's asymmetric composition */}
+              centered box, matching the original's asymmetric composition.
+              Using the tree hero image here instead of the source site's
+              placeholder (which was an unrelated character render, likely
+              unfinished content on their end, not a tree/certificate image) */}
           <div className="relative order-2 h-[380px] md:order-1 md:-ml-10 md:h-[620px] lg:-ml-24">
             <img
-              src="https://framerusercontent.com/images/odRAuUOqKFeuQhtEcL2UFFCIo.png"
+              src="https://framerusercontent.com/images/mRLVTvuN46hVjqnB9DPdYH8RXUY.png"
               alt="Example CNC DAO tree NFT certificate"
-              className="h-full w-full object-cover object-bottom md:rounded-tr-2xl"
+              className="h-full w-full bg-[#173a19] object-contain object-bottom p-8 md:rounded-tr-2xl"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2d6a30] via-transparent to-transparent md:bg-gradient-to-r" />
           </div>

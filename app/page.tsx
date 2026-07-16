@@ -7,6 +7,7 @@ import { LogoMarquee } from "@/components/Visuals"
 import ParticleSphere from "@/components/ParticleSphere"
 import DotGlobe from "@/components/DotGlobe"
 import { Reveal } from "@/components/Reveal"
+import { FlipCard } from "@/components/FlipCard"
 
 /**
  * CNC DAO — Homepage
@@ -516,56 +517,93 @@ export default function Home() {
         </div></Reveal>
       </section>
 
-      {/* ---------- NFT Identity ---------- */}
-      <section id="nft" className="relative overflow-hidden border-t border-white/5 bg-[#2d6a30] text-[#1a1a18]">
+      {/* ---------- NFT Identity / Mint gallery ---------- */}
+      <section id="nft" className="relative overflow-hidden border-t border-white/5 bg-black">
         <Reveal>
-        <div className="mx-auto grid max-w-[1400px] grid-cols-1 items-end gap-10 md:grid-cols-2 md:gap-0">
-          {/* Image bleeds toward the section's edge rather than sitting in a
-              centered box, matching the original's asymmetric composition.
-              Using the tree hero image here instead of the source site's
-              placeholder (which was an unrelated character render, likely
-              unfinished content on their end, not a tree/certificate image) */}
-          <div className="relative order-2 h-[380px] md:order-1 md:-ml-10 md:h-[620px] lg:-ml-24">
-            <img
-              src="https://framerusercontent.com/images/mRLVTvuN46hVjqnB9DPdYH8RXUY.png"
-              alt="Example CNC DAO tree NFT certificate"
-              loading="lazy"
-              className="h-full w-full bg-[#173a19] object-contain object-bottom p-8 md:rounded-tr-2xl"
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2d6a30] via-transparent to-transparent md:bg-gradient-to-r" />
-          </div>
-
-          <div className="order-1 px-6 py-16 md:order-2 md:px-16 md:py-24">
-            <p className="mb-2 font-[family-name:var(--font-syne)] text-lg font-extrabold text-[#f9f6ef]">
-              NFT Identity
-            </p>
-            <h2 className="mb-6 font-[family-name:var(--font-syne)] text-[36px] font-bold leading-tight tracking-[-0.02em] text-[#1a1a18] md:text-[52px]">
-              Not a collectible.
-              <br />A certificate.
+          <div className="px-6 pb-16 pt-24 text-center md:px-16">
+            <h2 className="mx-auto mb-6 max-w-lg font-[family-name:var(--font-dm-sans)] text-[32px] font-medium leading-tight tracking-[-0.02em] md:text-[44px]">
+              Mint Your Digital Tree Identity
             </h2>
-            <p className="mb-10 max-w-md text-[#ede8dc]">
-              Your tree NFT is a permanent proof of stewardship, not speculation. It
-              contains verified data, validator signatures, and a permanent link to
-              the tree&rsquo;s on-chain record.
+            <p className="mx-auto mb-8 max-w-xl leading-[1.6] text-[#cccccc]">
+              CNC DAO connects real environmental action with blockchain proof.
+              Submit a tree, earn verification from Nature Heroes, and mint your
+              stewardship on Solana.
             </p>
-            <div className="mb-10 flex flex-col gap-5">
-              {nftPoints.map((p) => (
-                <div key={p.title} className="flex gap-4 transition-transform duration-300 hover:translate-x-1">
-                  <IconCheck className="h-6 w-6 flex-shrink-0" />
-                  <div>
-                    <div className="mb-1 font-[family-name:var(--font-syne)] text-[15px] font-semibold tracking-[-0.02em] text-[#1a1a18]">
-                      {p.title}
-                    </div>
-                    <div className="text-sm text-[#ede8dc]">{p.body}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <button className="rounded-full bg-[#f0a830] px-8 py-3 text-sm font-medium text-[#1a1a18] transition-transform duration-200 hover:scale-105">
-              See an Example NFT
+            <button className="mx-auto flex items-center gap-2 rounded-full bg-[#1db954] px-6 py-3 text-sm font-medium transition-transform duration-200 hover:scale-105">
+              <span className="h-2 w-2 rounded-full bg-white" />
+              Mint NFT
             </button>
           </div>
-        </div></Reveal>
+        </Reveal>
+
+        <Reveal>
+          <div className="border-t border-white/5 bg-[#0d0d0d] px-6 py-16 md:px-16">
+            <div className="mx-auto mb-8 flex max-w-[1200px] items-center justify-between">
+              <div>
+                <h3 className="mb-1 font-[family-name:var(--font-syne)] text-lg font-bold">
+                  Potential Variations
+                </h3>
+                <p className="text-sm text-white/50">
+                  Each mint generates unique genetic markers and aesthetic traits.
+                </p>
+              </div>
+              <Link
+                href="#"
+                className="hidden items-center gap-1 text-xs font-semibold uppercase tracking-wide text-[#f0a830] sm:flex"
+              >
+                View Collection <IconArrow className="h-3 w-3 rotate-45" />
+              </Link>
+            </div>
+
+            {/* Tap a card to flip it. Art is a placeholder — the real cards
+                use commissioned character illustrations that I can't
+                reproduce; swap the gradient blocks for the real art. */}
+            <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                { name: "CNC Green", price: "$12.00", token: "672VC" },
+                { name: "CNC Tree Guy", price: "$12.00", token: "672VC" },
+                { name: "CNC Green", price: "$12.00", token: "672VC" },
+              ].map((card, i) => (
+                <FlipCard
+                  key={i}
+                  className="h-[220px]"
+                  front={
+                    <div className="flex h-[220px] items-center overflow-hidden rounded-2xl border border-white/10 bg-[#1b1b1e]">
+                      <div className="flex h-full w-2/5 flex-shrink-0 items-center justify-center bg-gradient-to-br from-[#1db954]/25 via-[#0d0d0d] to-[#2d6a30]/40 text-[10px] text-white/30">
+                        Art placeholder
+                      </div>
+                      <div className="flex-1 px-6">
+                        <div className="mb-1 text-sm text-white/50">{card.price}</div>
+                        <div className="mb-1 font-[family-name:var(--font-syne)] text-lg font-bold">
+                          {card.name} 👀
+                        </div>
+                        <div className="mb-4 text-sm text-white/40">{card.token}</div>
+                        <span className="inline-block rounded-full bg-white/95 px-5 py-2 text-xs font-semibold text-[#0b0a12]">
+                          Mine NFT
+                        </span>
+                      </div>
+                    </div>
+                  }
+                  back={
+                    <div className="flex h-[220px] flex-col justify-center gap-3 rounded-2xl border border-[#1db954]/30 bg-[#12121c] px-6">
+                      <div className="font-[family-name:var(--font-syne)] text-sm font-bold text-white">
+                        {card.name} — Token Details
+                      </div>
+                      <div className="space-y-1.5 text-xs text-white/50">
+                        <div>Trait: Genetic marker #{i + 1}</div>
+                        <div>Chain: Solana</div>
+                        <div>Status: Unminted</div>
+                      </div>
+                      <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-[#1db954]">
+                        View on Explorer <IconArrow className="h-3 w-3 rotate-45" />
+                      </span>
+                    </div>
+                  }
+                />
+              ))}
+            </div>
+          </div>
+        </Reveal>
       </section>
 
       {/* ---------- Global network globe ---------- */}

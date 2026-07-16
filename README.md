@@ -1,104 +1,85 @@
-<p align="center"><img src="https://raw.githubusercontent.com/cncdaodas-gif/CNC-DAO/b30910a2ff086a02934967edaa4256d70671cce2/assets/logo.jpg" width="200" height="200" />
+# CNC DAO
 
-# 🌿 CNC DAO - MVP</p> 
-### BUILD • EDUCATE • PRESERVE NATURE
+A regenerative-finance app on Solana that turns real, human-verified tree planting into a permanent on-chain record. Every submission is confirmed by two independent Nature Heroes before it's written on-chain and minted as a proof-of-stewardship NFT.
 
-**CNC DAO** is a purpose-driven organization focused on leveraging community power and blockchain technology to protect the environment. This project is a **Solana-based Web Application** that enables a transparent, human-verified pipeline for tree planting activities.
-
----
-
-## 📌 Project Overview
-The CNC DAO MVP provides a simplified, functional platform to prove that real-world environmental action can be verified, tracked, and tokenized on-chain.
-
-**The 4 Non-Negotiables:**
-1. **Tree Registry:** Anchoring data on the Solana blockchain.
-2. **Tree NFT Minting:** 1 Verified Tree = 1 Digital Identity.
-3. **Simple Verification:** The "Nature Heroes" human-validation system.
-4. **Public Dashboard:** Global map visualization of planting activities.
+**Live:** https://naturre.xyz
+**Frontend reference (design source):** https://cncdao.framer.website
 
 ---
 
-## 🚀 Key Features
+## Stack
 
-### 1. Tree Data Collection
-Users can submit planting data with minimal friction.
-* **Automated Data:** Precise GPS (Latitude/Longitude) and Timestamps are captured via device sensors.
-* **Manual Input:** Tree Name, Height, and "Clean Picture" upload.
-* **Project Types:** Supports Single Project or Combined Project submissions.
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Deployment:** Vercel
+- **Chain:** Solana (integration pending — see "Where backend/contract work plugs in")
 
-### 2. "Nature Heroes" Validation Logic
-A robust consensus system to prevent fake data:
-* **Human-in-the-Loop:** Requires a manual verification layer.
-* **Consensus Rule:** Minimum of **2 independent validators** (Nature Heroes) must approve a submission.
-* **Verification Flag:** Only once `verified = true` is set on-chain can the NFT be minted.
+## Project structure
 
-### 3. Solana NFT Integration
-* **Digital Identity:** Each surviving tree is represented by an NFT.
-* **Storage:** Metadata and images are stored using **IPFS** (Content Identification - CID).
-* **Connection:** NFTs are linked to the Registry **PDA** (Program Derived Address).
+```
+app/
+  layout.tsx              Root layout, font loading
+  page.tsx                 Homepage — all sections
+  globals.css              Tailwind entrypoint + custom keyframes
+  map/page.tsx              Global Map page
+  tree-reg/page.tsx         Tree registration/verification form
+  nature-heroes/page.tsx    Nature Heroes info + application CTA
+  contact/page.tsx          Contact form
+  privacy-policy/page.tsx
 
-### 4. Global Impact Map
-* **Visualization:** Integration with a Map API to show tree locations and project distribution globally.
-* **Transparency:** Real-time updates on activity density and verification status.
+components/
+  Header.tsx / Footer.tsx    Shared across every page
+  MobileNav.tsx              Hamburger menu (mobile)
+  TreeMap.tsx                Interactive 2D tree registry map (filters, search, pan/zoom)
+  DotGlobe.tsx               Rotating 3D dot-matrix globe (real coastline data)
+  land-points.json           Precomputed globe coastline points (see scripts/)
+  ParticleSphere.jsx         Cursor-reactive particle sphere (hero visual)
+  Visuals.tsx                Logo marquee ticker
+  Icons.tsx                  Inline SVG icon set
+  Reveal.tsx                 Scroll-triggered fade/slide-in wrapper
 
----
-
-## 🛠 Technical Stack
-* **Blockchain:** Solana (Anchor Framework)
-* **Frontend:** Web Application (React/Next.js)
-* **Storage:** IPFS (via Pinata or Web3.Storage)
-* **Verification:** Manual Validator Portal + Sentinel Satellite API integration
-* **Wallet:** Solana Wallet Standard (Phantom, Solflare, etc.)
-
---
-
-## 📂 System Flow
-1. **Register:** User uploads tree data (Photos + GPS). Data enters "Pending" state.
-2. **Verify:** Two "Nature Heroes" review the submission. Satellite data (Sentinel) is referenced for accuracy.
-3. **Anchor:** Upon 2nd approval, data is finalized on the Solana blockchain.
-4. **Mint:** User receives the option to mint a unique Tree NFT.
-5. **View:** The tree becomes a permanent pin on the Global Map.
-
----
-
-## 💻 Development & Smart Contract Logic
-The Solana Program utilizes **PDAs** to track consensus.
-
-```rust
-// Logic Summary
-- TreeAccount: Stores metadata & validation_count.
-- Validate Instruction: 
-    - Checks if validator is whitelisted.
-    - Ensures validator hasn't voted twice.
-    - If count == 2, sets is_verified = true.
+scripts/
+  gen-land-points.mjs   Regenerates components/land-points.json from real
+                        world-atlas coastline data. Run with
+                        `node scripts/gen-land-points.mjs` if you need to
+                        change the globe's resolution — do NOT compute this
+                        at runtime in the browser, it's expensive (this was
+                        previously a real performance bug on the live site).
 ```
 
----
+## Where backend/contract work plugs in
 
-## 🚧 MVP Scope Control
-**Included:**
-* Proof of real-world tree → Validated → Recorded → Visualized → Tokenized.
+Nothing on-chain is wired up yet — every "Connect Wallet," form submission,
+and stat on the site is currently either disabled, a placeholder, or static
+mock data. Specifically:
 
-**Excluded (Future Phases):**
-* Complex tokenomics & Staking.
-* DAO Governance/Voting.
-* Automated AI Image Recognition.
+| Area | Current state | Needs |
+|---|---|---|
+| `Header.tsx` — Connect Wallet button | Static button, no handler | Wallet adapter integration (`@solana/wallet-adapter-react` recommended) |
+| `app/tree-reg/page.tsx` — submission form | Local React state only, no submission | API route or direct program call to submit a tree registration |
+| `components/TreeMap.tsx` — `trees` array | Hardcoded 2 placeholder trees | Fetch from a real data source (DB or on-chain program accounts) |
+| `app/page.tsx` — `registryStats` | Hardcoded numbers | Live counts from chain/DB |
+| `components/DotGlobe.tsx` — `highlights` array | Hardcoded coordinates | Real verified-region coordinates |
+| NFT minting | Not implemented — "See an Example NFT" button is inert | Mint flow once verification logic exists |
+| Nature Hero verification (2-of-2 approval) | Described in copy only | Actual program logic + a Hero-facing review UI (doesn't exist yet) |
 
----
+Suggested approach: add an `app/api/` directory for route handlers, or a
+separate `programs/` directory if using an Anchor workspace in this same
+repo (neither exists yet — this is a pure frontend repo today).
 
-## 🤝 Contributing
-1. **Fork** the repository.
-2. Create a **Feature Branch** (`git checkout -b feature/AmazingFeature`).
-3. **Commit** your changes (`git commit -m 'Add some AmazingFeature'`).
-4. **Push** to the branch (`git push origin feature/AmazingFeature`).
-5. Open a **Pull Request**.
+## Development
 
----
+```bash
+npm install
+npm run dev       # http://localhost:3000
+npm run build     # production build — matches what Vercel runs
+```
 
-## ⚠️ Key Risks & Mitigations
-* **Fake Data:** Controlled via 2-factor human validation.
-* **UX Adoption:** Minimalist UI/UX focusing on "Register → Mint" with zero blockchain jargon.
-* **On-Chain Cost:** Optimized via Solana's high-speed, low-fee architecture.
+Before pushing, it's worth running `npx tsc --noEmit` locally — `next build`
+runs a strict TypeScript check that a plain syntax check won't catch.
 
----
-*Created with ❤️ by the CNC DAO Community.*
+## Deployment
+
+Connected to Vercel, deploys automatically on push to `main`. Domain
+(`naturre.xyz`) is configured via Namecheap DNS pointing at Vercel.

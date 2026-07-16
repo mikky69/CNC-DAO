@@ -1,10 +1,11 @@
 import Link from "next/link"
 import TreeMap from "@/components/TreeMap"
-import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon, SocialIcon } from "@/components/Icons"
+import { IconGPS, IconRealtime, IconOnChain, IconCheck, IconArrow, StepIcon } from "@/components/Icons"
+import { Header } from "@/components/Header"
+import { Footer } from "@/components/Footer"
 import { LogoMarquee } from "@/components/Visuals"
 import ParticleSphere from "@/components/ParticleSphere"
 import DotGlobe from "@/components/DotGlobe"
-import { MobileNav } from "@/components/MobileNav"
 import { Reveal } from "@/components/Reveal"
 
 /**
@@ -181,35 +182,7 @@ export default function Home() {
   return (
     <main className="bg-[#0b0a12] text-white font-[family-name:var(--font-space-grotesk)]">
       {/* ---------- Nav ---------- */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#030303]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-4 md:px-16">
-          <Link href="#hero" className="flex items-center gap-2">
-            <img
-              src="https://framerusercontent.com/images/XkdqyILHzud8shJDghKw5DhZuw.png"
-              alt="CNC DAO"
-              className="h-6 w-6 object-cover"
-            />
-            <span className="text-lg font-medium tracking-[-0.02em]">
-              CNCDAO
-            </span>
-          </Link>
-          <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
-            <Link href="#how-it-works">How It Works</Link>
-            <Link href="#benefits">Global Map</Link>
-            <Link href="/tree-reg">Verification</Link>
-            <Link href="#nft">NFT</Link>
-            <Link href="/nature-heroes">Nature Heroes</Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <button
-              className="hidden rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105 md:block"
-            >
-              Connect Wallet
-            </button>
-            <MobileNav />
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* ---------- Hero ---------- */}
       <section id="hero" className="relative overflow-hidden px-6 pb-24 pt-20 md:px-16 md:pt-32">
@@ -360,7 +333,7 @@ export default function Home() {
                   <p className="text-white/60">{block.body}</p>
                 </div>
                 <div className="group relative aspect-[4/3] flex-1 overflow-hidden rounded-xl bg-white/5">
-                  <img src={block.image} alt={block.heading} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={block.image} alt={block.heading} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 </div>
               </div>
             ))}
@@ -466,7 +439,7 @@ export default function Home() {
               key={t.name}
               className="group relative flex min-h-[340px] flex-col justify-end overflow-hidden rounded-xl p-9 transition-transform duration-500 hover:-translate-y-2"
             >
-              <img src={t.image} alt={t.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              <img src={t.image} alt={t.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
               {/* Original site used "Satoshi" here (a Fontshare font, not on
                   Google Fonts) — using Syne as the closest loaded match.
@@ -565,6 +538,7 @@ export default function Home() {
             <img
               src="https://framerusercontent.com/images/mRLVTvuN46hVjqnB9DPdYH8RXUY.png"
               alt="Example CNC DAO tree NFT certificate"
+              loading="lazy"
               className="h-full w-full bg-[#173a19] object-contain object-bottom p-8 md:rounded-tr-2xl"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#2d6a30] via-transparent to-transparent md:bg-gradient-to-r" />
@@ -622,65 +596,7 @@ export default function Home() {
       </section>
 
       {/* ---------- Footer ---------- */}
-      <footer className="border-t border-white/10 px-6 py-16 md:px-16">
-        <div className="mx-auto flex max-w-[1200px] flex-col gap-14 md:flex-row md:justify-between">
-          <div className="max-w-xs">
-            <div className="mb-4 flex items-center gap-2">
-              <img
-                src="https://framerusercontent.com/images/XkdqyILHzud8shJDghKw5DhZuw.png"
-                alt="CNC DAO"
-                className="h-5 w-5 object-cover"
-              />
-              <span className="text-lg font-medium tracking-[-0.02em]">
-                CNCDAO
-              </span>
-            </div>
-            <p className="mb-6 text-sm text-white/70">
-              Every tree, verified and on record.
-            </p>
-            <div className="flex gap-2">
-              {(["linkedin", "x", "instagram", "facebook", "youtube"] as const).map((s) => (
-                <a
-                  key={s}
-                  aria-label={s}
-                  href={`https://${s === "x" ? "x" : s}.com`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white/80 hover:bg-white/20"
-                >
-                  <SocialIcon name={s} className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex gap-16">
-            <div>
-              <h3 className="mb-4 text-sm font-medium text-white/70">Navigation</h3>
-              <ul className="space-y-3 text-sm text-white/70">
-                <li><Link href="#overview">How It Works</Link></li>
-                <li><Link href="#benefits">Global Map</Link></li>
-                <li><Link href="/tree-reg">Verification</Link></li>
-                <li><Link href="#nft">NFT</Link></li>
-                <li><Link href="/nature-heroes">Nature Heroes</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-4 text-sm font-medium text-white/70">Information</h3>
-              <ul className="space-y-3 text-sm text-white/70">
-                <li><Link href="/#faq">FAQ</Link></li>
-                <li><Link href="/contact">Contact</Link></li>
-                <li><Link href="/privacy-policy">Privacy Policy</Link></li>
-                <li><Link href="/tree-reg">Plant a Tree</Link></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-auto mt-14 max-w-[1200px] text-center text-sm text-white/50">
-          © Copyright {new Date().getFullYear()} CNCDAO. All rights reserved.
-        </div>
-      </footer>
+      <Footer />
     </main>
   )
 }

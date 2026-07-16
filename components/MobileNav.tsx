@@ -4,10 +4,10 @@ import { useState } from "react"
 import Link from "next/link"
 
 const links = [
-  { href: "#how-it-works", label: "How It Works" },
-  { href: "#benefits", label: "Global Map" },
+  { href: "/#how-it-works", label: "How It Works" },
+  { href: "/map", label: "Global Map" },
   { href: "/tree-reg", label: "Verification" },
-  { href: "#nft", label: "NFT" },
+  { href: "/#nft", label: "NFT" },
   { href: "/nature-heroes", label: "Nature Heroes" },
 ]
 

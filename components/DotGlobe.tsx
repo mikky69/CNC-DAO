@@ -1,11 +1,18 @@
 "use client"
 
-import { useEffect, useRef, useMemo } from "react"
-import { geoContains } from "d3-geo"
-import { feature } from "topojson-client"
-import land110m from "world-atlas/land-110m.json"
+import { useEffect, useRef } from "react"
+import landPointsRaw from "./land-points.json"
 
 type LandPoint = { lng: number; lat: number }
+
+// Precomputed once via scripts/gen-land-points.mjs instead of running
+// d3-geo's geoContains against ~3000 grid points in the browser on every
+// page load — that synchronous computation, run twice (once per globe
+// instance on the page), was the main cause of the slow initial load.
+const landPoints: LandPoint[] = (landPointsRaw as [number, number][]).map(([lng, lat]) => ({
+  lng,
+  lat,
+}))
 
 // Yellow highlight dots — verified tree locations. Swap for real
 // coordinates once you have live data (lat, lng, label).
@@ -18,22 +25,6 @@ const highlights: LandPoint[] = [
 
 export default function DotGlobe({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  // Build the land dot grid once (real coastlines via world-atlas + d3-geo,
-  // not an approximation).
-  const landPoints = useMemo<LandPoint[]>(() => {
-    const landFeature = feature(land110m as any, (land110m as any).objects.land) as any
-    const points: LandPoint[] = []
-    const step = 2.2
-    for (let lat = -80; lat <= 80; lat += step) {
-      for (let lng = -180; lng <= 180; lng += step) {
-        if (geoContains(landFeature, [lng, lat])) {
-          points.push({ lng, lat })
-        }
-      }
-    }
-    return points
-  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -123,7 +114,7 @@ export default function DotGlobe({ className = "" }: { className?: string }) {
       cancelAnimationFrame(raf)
       window.removeEventListener("resize", resize)
     }
-  }, [landPoints])
+  }, [])
 
   return (
     <div

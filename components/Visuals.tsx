@@ -81,6 +81,7 @@ export function LogoMarquee() {
             key={`${logo.name}-${i}`}
             src={logo.src}
             alt={logo.name}
+            loading="lazy"
             className="h-8 w-auto flex-shrink-0 object-contain opacity-70"
           />
         ))}

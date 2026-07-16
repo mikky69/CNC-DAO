@@ -4,7 +4,7 @@ import { SocialIcon } from "@/components/Icons"
 export function Footer() {
   return (
     <footer className="border-t border-white/10 px-6 py-16 md:px-16">
-      <div className="mx-auto flex max-w-[1200px] flex-col gap-14 md:flex-row md:justify-between">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-14 md:grid-cols-3">
         <div className="max-w-xs">
           <div className="mb-4 flex items-center gap-2">
             <img
@@ -29,9 +29,16 @@ export function Footer() {
               </a>
             ))}
           </div>
+          <p className="mt-8 text-xs text-white/30">
+            © Copyright {new Date().getFullYear()} CNCDAO. All rights reserved.
+          </p>
         </div>
 
-        <div className="flex gap-16">
+        <p className="justify-self-center bg-gradient-to-b from-[#a1e3b8] via-white to-[#1db954] bg-clip-text text-center font-[family-name:var(--font-syne)] text-5xl font-extrabold tracking-tight text-transparent md:text-6xl">
+          CNCDAO
+        </p>
+
+        <div className="flex justify-between gap-16 md:justify-self-end">
           <div>
             <h3 className="mb-4 text-sm font-medium text-white/70">Navigation</h3>
             <ul className="space-y-3 text-sm text-white/70">
@@ -52,10 +59,6 @@ export function Footer() {
             </ul>
           </div>
         </div>
-      </div>
-
-      <div className="mx-auto mt-14 max-w-[1200px] text-center text-sm text-white/50">
-        © Copyright {new Date().getFullYear()} CNCDAO. All rights reserved.
       </div>
     </footer>
   )

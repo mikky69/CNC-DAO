@@ -516,15 +516,6 @@ export default function Home() {
         </div></Reveal>
       </section>
 
-      {/* ---------- CNC DAO wordmark interstitial ---------- */}
-      <section className="relative overflow-hidden border-t border-white/5 bg-black py-24">
-        <Reveal>
-          <p className="animate-pulse text-center font-[family-name:var(--font-syne)] text-5xl font-extrabold tracking-tight text-white md:text-8xl">
-            CNC DAO
-          </p>
-        </Reveal>
-      </section>
-
       {/* ---------- NFT Identity ---------- */}
       <section id="nft" className="relative overflow-hidden border-t border-white/5 bg-[#2d6a30] text-[#1a1a18]">
         <Reveal>

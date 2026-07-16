@@ -1,8 +1,19 @@
+import dynamic from "next/dynamic"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import TreeMap from "@/components/TreeMap"
 import DotGlobe from "@/components/DotGlobe"
 import { Reveal } from "@/components/Reveal"
+
+// Leaflet touches `window` on load, so it can't be server-rendered
+const OSMTreeMap = dynamic(() => import("@/components/OSMTreeMap"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center text-sm text-white/40">
+      Loading map…
+    </div>
+  ),
+})
 
 export const metadata = {
   title: "Global Map — CNC DAO",
@@ -30,8 +41,32 @@ export default function MapPage() {
         </Reveal>
       </section>
 
+      <section className="px-6 pb-8 md:px-16">
+        <Reveal>
+          <div className="mx-auto mb-4 max-w-[1400px]">
+            <h2 className="mb-1 font-[family-name:var(--font-syne)] text-lg font-bold">
+              Live registry — OpenStreetMap
+            </h2>
+            <p className="text-sm text-white/50">
+              Real coordinates for every tree currently in the database.
+            </p>
+          </div>
+          <div className="mx-auto h-[500px] max-w-[1400px] overflow-hidden rounded-2xl border border-white/10">
+            <OSMTreeMap className="h-full w-full" />
+          </div>
+        </Reveal>
+      </section>
+
       <section className="px-6 pb-20 md:px-16">
         <Reveal>
+          <div className="mx-auto mb-4 max-w-[1400px]">
+            <h2 className="mb-1 font-[family-name:var(--font-syne)] text-lg font-bold">
+              Registry browser
+            </h2>
+            <p className="text-sm text-white/50">
+              Filter, search, and browse the full tree list.
+            </p>
+          </div>
           <div className="mx-auto h-[650px] max-w-[1400px] overflow-hidden rounded-2xl border border-white/10">
             <TreeMap />
           </div>

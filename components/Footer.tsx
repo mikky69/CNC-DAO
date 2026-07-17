@@ -45,6 +45,7 @@ export function Footer() {
               <li><Link href="/#how-it-works">How It Works</Link></li>
               <li><Link href="/map">Global Map</Link></li>
               <li><Link href="/tree-reg">Verification</Link></li>
+              <li><Link href="/campaigns">Campaigns</Link></li>
               <li><Link href="/#nft">NFT</Link></li>
               <li><Link href="/nature-heroes">Nature Heroes</Link></li>
             </ul>

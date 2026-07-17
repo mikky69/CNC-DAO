@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useState } from "react"
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
 
@@ -51,16 +51,13 @@ export default function OSMTreeMap({
   trees?: RegisteredTree[]
   className?: string
 }) {
-  // Leaflet's default marker icons reference image paths that break under
-  // Next.js's bundler — using CircleMarker instead avoids that entirely, so
-  // no icon-fix workaround is needed here.
-  useEffect(() => {}, [])
+  const [satelliteView, setSatelliteView] = useState<RegisteredTree | null>(null)
 
   const center: [number, number] =
     trees.length > 0 ? [trees[0].lat, trees[0].lng] : [9.082, 8.6753]
 
   return (
-    <div className={className}>
+    <div className={`relative ${className}`}>
       <MapContainer
         center={center}
         zoom={trees.length > 1 ? 5 : 8}
@@ -82,6 +79,7 @@ export default function OSMTreeMap({
               fillOpacity: 0.85,
               weight: 2,
             }}
+            eventHandlers={{ click: () => setSatelliteView(t) }}
           >
             <Popup>
               <div style={{ fontFamily: "sans-serif", fontSize: 13 }}>
@@ -90,11 +88,72 @@ export default function OSMTreeMap({
                 {t.species} — {t.location}
                 <br />
                 <span style={{ textTransform: "capitalize" }}>{t.status}</span>
+                <br />
+                <button
+                  onClick={() => setSatelliteView(t)}
+                  style={{
+                    marginTop: 6,
+                    background: "#1db954",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
+                    padding: "4px 10px",
+                    fontSize: 12,
+                    cursor: "pointer",
+                  }}
+                >
+                  View satellite close-up
+                </button>
               </div>
             </Popup>
           </CircleMarker>
         ))}
       </MapContainer>
+
+      {satelliteView && (
+        <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#0b0a12]">
+            <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <div>
+                <div className="text-sm font-bold text-white">{satelliteView.name}</div>
+                <div className="text-xs text-white/50">{satelliteView.location}</div>
+              </div>
+              <button
+                onClick={() => setSatelliteView(null)}
+                className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70 hover:bg-white/20"
+              >
+                Close
+              </button>
+            </div>
+            <div className="h-[360px] w-full">
+              <MapContainer
+                key={satelliteView.id}
+                center={[satelliteView.lat, satelliteView.lng]}
+                zoom={18}
+                scrollWheelZoom={true}
+                style={{ height: "100%", width: "100%" }}
+              >
+                {/* Free satellite imagery, no API key required. Higher-
+                    resolution alternatives (Sentinel-2, Google Earth Engine)
+                    both require API keys/auth setup — worth swapping in once
+                    the backend team has those credentials. */}
+                <TileLayer
+                  attribution="Tiles &copy; Esri"
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                />
+                <CircleMarker
+                  center={[satelliteView.lat, satelliteView.lng]}
+                  radius={8}
+                  pathOptions={{ color: "#1db954", fillColor: "#1db954", fillOpacity: 0.6, weight: 2 }}
+                />
+              </MapContainer>
+            </div>
+            <div className="border-t border-white/10 px-4 py-2 text-center text-[10px] text-white/30">
+              Satellite imagery © Esri — resolution varies by region
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

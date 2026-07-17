@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import landPointsRaw from "./land-points.json"
+import { registeredTrees } from "./OSMTreeMap"
 
 type LandPoint = { lng: number; lat: number }
 
@@ -14,14 +15,10 @@ const landPoints: LandPoint[] = (landPointsRaw as [number, number][]).map(([lng,
   lat,
 }))
 
-// Yellow highlight dots — verified tree locations. Swap for real
-// coordinates once you have live data (lat, lng, label).
-const highlights: LandPoint[] = [
-  { lng: 3.4, lat: 6.5 }, // Lagos, Nigeria
-  { lng: 12.35, lat: 12.35 }, // N'Djamena area
-  { lng: -60, lat: -3 }, // Amazon region
-  { lng: -47, lat: -15 }, // Brazil
-]
+// Yellow highlight dots — driven by the same registered-tree data used on
+// the OpenStreetMap view (components/OSMTreeMap.tsx), so both stay in sync.
+// Swap that file's data source for a real fetch once there's a backend.
+const highlights: LandPoint[] = registeredTrees.map((t) => ({ lng: t.lng, lat: t.lat }))
 
 export default function DotGlobe({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)

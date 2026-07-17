@@ -1,0 +1,146 @@
+"use client"
+
+import { useState } from "react"
+import { Header } from "@/components/Header"
+import { Footer } from "@/components/Footer"
+import { Reveal } from "@/components/Reveal"
+import { IconCheck, IconArrow } from "@/components/Icons"
+import { submitNatureHeroApplication } from "@/lib/mockAuth"
+
+export default function ApplyNatureHeroPage() {
+  const [submitted, setSubmitted] = useState(false)
+
+  return (
+    <main className="bg-[#0b0a12] text-white font-[family-name:var(--font-space-grotesk)]">
+      <Header />
+
+      <section className="px-6 pb-16 pt-20 text-center md:px-16 md:pt-28">
+        <Reveal>
+          <p className="mb-4 font-[family-name:var(--font-space-mono)] text-xs font-bold uppercase tracking-[0.15em] text-[#f0a830]">
+            Nature Hero Application
+          </p>
+          <h1 className="mx-auto mb-6 max-w-2xl font-[family-name:var(--font-dm-sans)] text-[36px] font-medium leading-tight tracking-[-0.02em] md:text-[52px]">
+            Help verify the network
+          </h1>
+          <p className="mx-auto max-w-xl leading-[1.6] text-[#cccccc]">
+            Nature Heroes review tree submissions and validate campaigns in their
+            region. Applications are reviewed by CNC DAO admins.
+          </p>
+        </Reveal>
+      </section>
+
+      <section className="px-6 pb-24 md:px-16">
+        <Reveal>
+          <div className="mx-auto max-w-xl rounded-2xl border border-white/10 bg-[#08080f] p-6 md:p-10">
+            {submitted ? (
+              <div className="py-12 text-center">
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#f0a830]/15">
+                  <IconCheck className="h-7 w-7 text-[#f0a830]" />
+                </div>
+                <h2 className="mb-2 font-[family-name:var(--font-syne)] text-xl font-bold">
+                  Application submitted
+                </h2>
+                <p className="mx-auto max-w-sm text-sm text-white/60">
+                  CNC DAO admins will review your application. This is currently
+                  mock/demo state — real approval requires an admin backend that
+                  doesn't exist yet.
+                </p>
+              </div>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  submitNatureHeroApplication()
+                  setSubmitted(true)
+                }}
+                className="flex flex-col gap-5"
+              >
+                <Field label="Full name" required />
+                <Field label="Email" type="email" required />
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="City/Region" required />
+                  <Field label="Country" required />
+                </div>
+                <TextArea
+                  label="Why do you want to be a Nature Hero?"
+                  placeholder="Tell us about your connection to the area and why you'd be a good validator."
+                  required
+                />
+                <TextArea
+                  label="Relevant experience"
+                  placeholder="Environmental work, community organizing, agriculture, forestry — anything relevant."
+                />
+                <div>
+                  <label className="mb-2 block text-sm text-white/70">
+                    Wallet address
+                  </label>
+                  <input
+                    placeholder="Connect your wallet to auto-fill"
+                    disabled
+                    className="w-full rounded-lg border border-white/10 bg-[#050508] px-4 py-3 text-sm text-white/40 outline-none"
+                  />
+                </div>
+                <label className="flex items-start gap-3 text-sm text-white/60">
+                  <input type="checkbox" required className="mt-1" />
+                  I understand Nature Heroes are responsible for verifying real
+                  submissions and will act in good faith.
+                </label>
+                <button
+                  type="submit"
+                  className="mt-2 flex items-center justify-center gap-2 rounded-full bg-[#1db954] px-6 py-3 text-sm font-medium transition-transform duration-200 hover:scale-105"
+                >
+                  Submit application <IconArrow className="h-4 w-4 rotate-45" />
+                </button>
+              </form>
+            )}
+          </div>
+        </Reveal>
+      </section>
+
+      <Footer />
+    </main>
+  )
+}
+
+function Field({
+  label,
+  type = "text",
+  required = false,
+}: {
+  label: string
+  type?: string
+  required?: boolean
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm text-white/70">{label}</label>
+      <input
+        type={type}
+        required={required}
+        className="w-full rounded-lg border border-white/10 bg-[#050508] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#1db954]/60"
+      />
+    </div>
+  )
+}
+
+function TextArea({
+  label,
+  placeholder,
+  required = false,
+}: {
+  label: string
+  placeholder?: string
+  required?: boolean
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm text-white/70">{label}</label>
+      <textarea
+        placeholder={placeholder}
+        required={required}
+        rows={3}
+        className="w-full rounded-lg border border-white/10 bg-[#050508] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#1db954]/60"
+      />
+    </div>
+  )
+}

@@ -7,6 +7,7 @@ const links = [
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/map", label: "Global Map" },
   { href: "/tree-reg", label: "Verification" },
+  { href: "/campaigns", label: "Campaigns" },
   { href: "/#nft", label: "NFT" },
   { href: "/nature-heroes", label: "Nature Heroes" },
 ]
@@ -54,12 +55,13 @@ export function MobileNav() {
               {l.label}
             </Link>
           ))}
-          <button
+          <Link
+            href="/connect-wallet"
             onClick={() => setOpen(false)}
-            className="mt-2 rounded-full bg-[#1db954] px-5 py-3 text-sm font-medium text-white"
+            className="mt-2 rounded-full bg-[#1db954] px-5 py-3 text-center text-sm font-medium text-white"
           >
             Connect Wallet
-          </button>
+          </Link>
         </nav>
       </div>
     </div>

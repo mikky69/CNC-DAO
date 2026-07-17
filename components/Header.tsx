@@ -1,10 +1,12 @@
 import Link from "next/link"
 import { MobileNav } from "@/components/MobileNav"
+import { WalletButton } from "@/components/WalletButton"
 
 const links = [
   { href: "/#how-it-works", label: "How It Works" },
   { href: "/map", label: "Global Map" },
   { href: "/tree-reg", label: "Verification" },
+  { href: "/campaigns", label: "Campaigns" },
   { href: "/#nft", label: "NFT" },
   { href: "/nature-heroes", label: "Nature Heroes" },
 ]
@@ -21,7 +23,7 @@ export function Header() {
           />
           <span className="text-lg font-medium tracking-[-0.02em]">CNCDAO</span>
         </Link>
-        <nav className="hidden items-center gap-8 text-sm text-white/70 md:flex">
+        <nav className="hidden items-center gap-7 text-sm text-white/70 md:flex">
           {links.map((l) => (
             <Link key={l.href} href={l.href} className="transition-colors hover:text-white">
               {l.label}
@@ -29,9 +31,7 @@ export function Header() {
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <button className="hidden rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105 md:block">
-            Connect Wallet
-          </button>
+          <WalletButton className="hidden md:block" />
           <MobileNav />
         </div>
       </div>

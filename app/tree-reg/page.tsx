@@ -27,6 +27,31 @@ const landOwnership = [
 export default function TreeRegPage() {
   const [submitted, setSubmitted] = useState(false)
   const [step, setStep] = useState(1)
+  const [coords, setCoords] = useState<{ lat: string; lng: string }>({ lat: "", lng: "" })
+  const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "granted" | "denied" | "unsupported">(
+    "idle"
+  )
+
+  function requestLocation() {
+    if (!("geolocation" in navigator)) {
+      setGeoStatus("unsupported")
+      return
+    }
+    setGeoStatus("locating")
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setCoords({
+          lat: pos.coords.latitude.toFixed(6),
+          lng: pos.coords.longitude.toFixed(6),
+        })
+        setGeoStatus("granted")
+      },
+      (err) => {
+        setGeoStatus(err.code === err.PERMISSION_DENIED ? "denied" : "unsupported")
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
 
   return (
     <main className="bg-[#0b0a12] text-white font-[family-name:var(--font-space-grotesk)]">
@@ -103,7 +128,23 @@ export default function TreeRegPage() {
                   {step === 1 && (
                     <div className="flex flex-col gap-5">
                       <SectionHeading title="Tree Details" subtitle="What did you plant?" />
-                      <Select label="Species" options={speciesOptions} required />
+                      <Field label="Tree name" placeholder="Give this tree a name, e.g. Grandma's Neem" required />
+                      <div>
+                        <label className="mb-2 block text-sm text-white/70">
+                          Species / type
+                        </label>
+                        <input
+                          list="species-suggestions"
+                          placeholder="Type a species — e.g. Neem, Mango, or anything else"
+                          required
+                          className="w-full rounded-lg border border-white/10 bg-[#050508] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#1db954]/60"
+                        />
+                        <datalist id="species-suggestions">
+                          {speciesOptions.map((s) => (
+                            <option key={s} value={s} />
+                          ))}
+                        </datalist>
+                      </div>
                       <Field label="Planting date" type="date" required />
                       <div className="grid grid-cols-2 gap-4">
                         <Field label="Approx. height (m)" type="number" placeholder="1.5" />
@@ -119,16 +160,43 @@ export default function TreeRegPage() {
                   {step === 2 && (
                     <div className="flex flex-col gap-5">
                       <SectionHeading title="Location" subtitle="Where is it planted?" />
-                      <div className="grid grid-cols-2 gap-4">
-                        <Field label="Latitude" placeholder="6.5244" required />
-                        <Field label="Longitude" placeholder="3.3792" required />
-                      </div>
                       <button
                         type="button"
-                        className="flex items-center justify-center gap-2 rounded-lg border border-white/10 py-2.5 text-sm text-white/70 transition-colors hover:border-[#1db954]/50 hover:text-white"
+                        onClick={requestLocation}
+                        className="flex items-center justify-center gap-2 rounded-lg border border-[#1db954]/40 bg-[#1db954]/10 py-3 text-sm font-medium text-[#1db954] transition-colors hover:bg-[#1db954]/20"
                       >
-                        <IconGPS className="h-4 w-4" /> Use my current location
+                        <IconGPS className="h-4 w-4" />
+                        {geoStatus === "locating" ? "Locating…" : "Use my current location"}
                       </button>
+                      {geoStatus === "denied" && (
+                        <p className="rounded-lg border border-[#f0a830]/30 bg-[#f0a830]/10 px-4 py-3 text-xs text-[#f0a830]">
+                          Location access is turned off. Enable location permissions
+                          for this site in your browser settings, then try again — or
+                          enter coordinates manually below.
+                        </p>
+                      )}
+                      {geoStatus === "unsupported" && (
+                        <p className="rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/50">
+                          Location isn't available on this device/browser. Enter
+                          coordinates manually below.
+                        </p>
+                      )}
+                      <div className="grid grid-cols-2 gap-4">
+                        <Field
+                          label="Latitude"
+                          placeholder="6.5244"
+                          required
+                          value={coords.lat}
+                          onChange={(v) => setCoords((c) => ({ ...c, lat: v }))}
+                        />
+                        <Field
+                          label="Longitude"
+                          placeholder="3.3792"
+                          required
+                          value={coords.lng}
+                          onChange={(v) => setCoords((c) => ({ ...c, lng: v }))}
+                        />
+                      </div>
                       <div className="grid grid-cols-2 gap-4">
                         <Field label="City/Town" placeholder="Lagos" required />
                         <Field label="Country" placeholder="Nigeria" required />
@@ -221,11 +289,15 @@ function Field({
   placeholder,
   type = "text",
   required = false,
+  value,
+  onChange,
 }: {
   label: string
   placeholder?: string
   type?: string
   required?: boolean
+  value?: string
+  onChange?: (value: string) => void
 }) {
   return (
     <div>
@@ -234,6 +306,8 @@ function Field({
         type={type}
         placeholder={placeholder}
         required={required}
+        value={value}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
         className="w-full rounded-lg border border-white/10 bg-[#050508] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#1db954]/60"
       />
     </div>

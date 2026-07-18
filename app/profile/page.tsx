@@ -1,11 +1,17 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { Reveal } from "@/components/Reveal"
-import { getMockUser, disconnectMockWallet, type MockUser } from "@/lib/mockAuth"
+import {
+  getMockUser,
+  disconnectMockWallet,
+  setAvatar,
+  resizeImage,
+  type MockUser,
+} from "@/lib/mockAuth"
 
 const roleLabel: Record<MockUser["role"], { label: string; color: string }> = {
   user: { label: "Registered User", color: "#cccccc" },
@@ -16,6 +22,21 @@ const roleLabel: Record<MockUser["role"], { label: string; color: string }> = {
 
 export default function ProfilePage() {
   const [user, setUser] = useState<MockUser | null | undefined>(undefined)
+  const [uploading, setUploading] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const dataUrl = await resizeImage(file)
+      setAvatar(dataUrl)
+      setUser(getMockUser())
+    } finally {
+      setUploading(false)
+    }
+  }
 
   useEffect(() => {
     setUser(getMockUser())
@@ -46,8 +67,39 @@ export default function ProfilePage() {
             ) : (
               <div className="rounded-2xl border border-white/10 bg-[#08080f] p-8">
                 <div className="mb-6 flex items-center gap-4">
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1db954]/15 font-[family-name:var(--font-syne)] text-lg font-bold text-[#1db954]">
-                    {user.walletAddress.slice(0, 2).toUpperCase()}
+                  <div className="group relative flex-shrink-0">
+                    <div className="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-[#1db954]/15 font-[family-name:var(--font-syne)] text-lg font-bold text-[#1db954]">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt="" className="h-full w-full object-cover" />
+                      ) : (
+                        (user.displayName || user.walletAddress).slice(0, 2).toUpperCase()
+                      )}
+                    </div>
+                    <button
+                      onClick={() => fileRef.current?.click()}
+                      aria-label="Upload profile photo"
+                      className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border-2 border-[#08080f] bg-white text-[#0b0a12] transition-transform hover:scale-110"
+                    >
+                      {uploading ? (
+                        <span className="h-2.5 w-2.5 animate-spin rounded-full border-[1.5px] border-[#0b0a12] border-t-transparent" />
+                      ) : (
+                        <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none">
+                          <path
+                            d="M4 7h3l1.5-2h7L17 7h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                          />
+                          <circle cx="12" cy="13" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+                        </svg>
+                      )}
+                    </button>
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFile}
+                      className="hidden"
+                    />
                   </div>
                   <div>
                     <div className="font-[family-name:var(--font-syne)] font-bold">

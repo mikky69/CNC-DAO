@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import landPointsRaw from "./land-points.json"
-import { registeredTrees } from "./OSMTreeMap"
+import { registeredTrees } from "@/lib/registeredTrees"
 
 type LandPoint = { lng: number; lat: number }
 

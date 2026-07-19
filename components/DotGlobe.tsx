@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import landPointsRaw from "./land-points.json"
-import { registeredTrees } from "@/lib/registeredTrees"
+import { getAllTrees } from "@/lib/registeredTrees"
 
 type LandPoint = { lng: number; lat: number }
 
@@ -15,13 +15,21 @@ const landPoints: LandPoint[] = (landPointsRaw as [number, number][]).map(([lng,
   lat,
 }))
 
-// Yellow highlight dots — driven by the same registered-tree data used on
-// the OpenStreetMap view (components/OSMTreeMap.tsx), so both stay in sync.
-// Swap that file's data source for a real fetch once there's a backend.
-const highlights: LandPoint[] = registeredTrees.map((t) => ({ lng: t.lng, lat: t.lat }))
-
 export default function DotGlobe({ className = "" }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  // Yellow highlight dots — driven by the same registered-tree data used on
+  // the OpenStreetMap view (lib/registeredTrees.ts), including anything
+  // submitted through the tree-reg form, so both stay in sync live.
+  const highlightsRef = useRef<LandPoint[]>([])
+
+  useEffect(() => {
+    const refresh = () => {
+      highlightsRef.current = getAllTrees().map((t) => ({ lng: t.lng, lat: t.lat }))
+    }
+    refresh()
+    window.addEventListener("trees:change", refresh)
+    return () => window.removeEventListener("trees:change", refresh)
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -89,7 +97,7 @@ export default function DotGlobe({ className = "" }: { className?: string }) {
       }
 
       // highlighted verification points (yellow)
-      for (const p of highlights) {
+      for (const p of highlightsRef.current) {
         const { x, y, z, visible } = project(p.lng, p.lat, rotation, R, cx, cy)
         if (!visible) continue
         const alpha = Math.max(0.2, z)

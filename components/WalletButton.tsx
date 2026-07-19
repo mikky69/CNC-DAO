@@ -1,11 +1,19 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { getMockUser, type MockUser } from "@/lib/mockAuth"
+import { useRouter } from "next/navigation"
+import {
+  getMockUser,
+  disconnectMockWallet,
+  type MockUser,
+} from "@/lib/mockAuth"
 
 export function WalletButton({ className = "" }: { className?: string }) {
   const [user, setUser] = useState<MockUser | null>(null)
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const router = useRouter()
 
   useEffect(() => {
     setUser(getMockUser())
@@ -14,23 +22,75 @@ export function WalletButton({ className = "" }: { className?: string }) {
     return () => window.removeEventListener("mockuser:change", handler)
   }, [])
 
-  if (user) {
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  if (!user) {
     return (
       <Link
-        href="/profile"
-        className={`rounded-full bg-white/10 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-white/20 ${className}`}
+        href="/connect-wallet"
+        className={`rounded-full bg-[#1db954] px-4 py-2 text-xs font-medium text-white transition-transform duration-200 hover:scale-105 sm:px-5 sm:py-2.5 sm:text-sm ${className}`}
       >
-        {user.walletAddress}
+        Connect Wallet
       </Link>
     )
   }
 
   return (
-    <Link
-      href="/connect-wallet"
-      className={`rounded-full bg-[#1db954] px-5 py-2.5 text-sm font-medium text-white transition-transform duration-200 hover:scale-105 ${className}`}
-    >
-      Connect Wallet
-    </Link>
+    <div ref={ref} className={`relative ${className}`}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 rounded-full bg-white/10 py-1.5 pl-1.5 pr-3 transition-colors hover:bg-white/20"
+      >
+        <span className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full bg-[#1db954]/25 text-[10px] font-bold text-[#1db954]">
+          {user.avatar ? (
+            <img src={user.avatar} alt="" className="h-full w-full object-cover" />
+          ) : (
+            (user.displayName || user.walletAddress).slice(0, 2).toUpperCase()
+          )}
+        </span>
+        <span className="hidden text-xs font-medium text-white sm:block">
+          {user.displayName || user.walletAddress}
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#0d0d14] shadow-xl">
+          <button
+            onClick={() => {
+              setOpen(false)
+              router.push("/profile")
+            }}
+            className="block w-full px-4 py-3 text-left text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => {
+              setOpen(false)
+              router.push("/profile")
+            }}
+            className="block w-full px-4 py-3 text-left text-sm text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            Edit profile
+          </button>
+          <button
+            onClick={() => {
+              disconnectMockWallet()
+              setOpen(false)
+              router.push("/")
+            }}
+            className="block w-full border-t border-white/10 px-4 py-3 text-left text-sm text-red-400/80 transition-colors hover:bg-white/5 hover:text-red-400"
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
   )
 }

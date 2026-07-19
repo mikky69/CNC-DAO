@@ -55,13 +55,6 @@ export function MobileNav() {
               {l.label}
             </Link>
           ))}
-          <Link
-            href="/connect-wallet"
-            onClick={() => setOpen(false)}
-            className="mt-2 rounded-full bg-[#1db954] px-5 py-3 text-center text-sm font-medium text-white"
-          >
-            Connect Wallet
-          </Link>
         </nav>
       </div>
     </div>

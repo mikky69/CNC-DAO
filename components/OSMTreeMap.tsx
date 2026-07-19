@@ -1,12 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet"
 import "leaflet/dist/leaflet.css"
-import { registeredTrees, type RegisteredTree } from "@/lib/registeredTrees"
+import { getAllTrees, type RegisteredTree } from "@/lib/registeredTrees"
 
 export type { RegisteredTree }
-export { registeredTrees }
 
 const statusColor: Record<RegisteredTree["status"], string> = {
   verified: "#22c55e",
@@ -15,22 +14,31 @@ const statusColor: Record<RegisteredTree["status"], string> = {
 }
 
 export default function OSMTreeMap({
-  trees = registeredTrees,
+  trees,
   className = "",
 }: {
   trees?: RegisteredTree[]
   className?: string
 }) {
   const [satelliteView, setSatelliteView] = useState<RegisteredTree | null>(null)
+  const [liveTrees, setLiveTrees] = useState<RegisteredTree[]>(trees ?? [])
+
+  useEffect(() => {
+    if (trees) return // explicit prop overrides live data
+    const refresh = () => setLiveTrees(getAllTrees())
+    refresh()
+    window.addEventListener("trees:change", refresh)
+    return () => window.removeEventListener("trees:change", refresh)
+  }, [trees])
 
   const center: [number, number] =
-    trees.length > 0 ? [trees[0].lat, trees[0].lng] : [9.082, 8.6753]
+    liveTrees.length > 0 ? [liveTrees[0].lat, liveTrees[0].lng] : [9.082, 8.6753]
 
   return (
     <div className={`relative ${className}`}>
       <MapContainer
         center={center}
-        zoom={trees.length > 1 ? 5 : 8}
+        zoom={liveTrees.length > 1 ? 5 : 8}
         scrollWheelZoom={false}
         style={{ height: "100%", width: "100%", background: "#0b0a12" }}
       >
@@ -38,7 +46,7 @@ export default function OSMTreeMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {trees.map((t) => (
+        {liveTrees.map((t) => (
           <CircleMarker
             key={t.id}
             center={[t.lat, t.lng]}

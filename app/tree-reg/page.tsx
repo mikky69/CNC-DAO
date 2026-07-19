@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Header } from "@/components/Header"
 import { Footer } from "@/components/Footer"
 import { Reveal } from "@/components/Reveal"
 import { IconArrow, IconGPS, IconCheck } from "@/components/Icons"
+import { addUserTree } from "@/lib/registeredTrees"
 
 const speciesOptions = [
   "Neem",
@@ -28,6 +30,10 @@ export default function TreeRegPage() {
   const [submitted, setSubmitted] = useState(false)
   const [step, setStep] = useState(1)
   const [coords, setCoords] = useState<{ lat: string; lng: string }>({ lat: "", lng: "" })
+  const [treeName, setTreeName] = useState("")
+  const [species, setSpecies] = useState("")
+  const [city, setCity] = useState("")
+  const [country, setCountry] = useState("")
   const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "granted" | "denied" | "unsupported">(
     "idle"
   )
@@ -88,6 +94,12 @@ export default function TreeRegPage() {
                   your region will review it, and you'll be notified once it's
                   verified and ready to mint.
                 </p>
+                <Link
+                  href="/map"
+                  className="mt-6 inline-block rounded-full bg-white/95 px-6 py-2.5 text-sm font-medium text-[#0b0a12]"
+                >
+                  View it on the map
+                </Link>
               </div>
             ) : (
               <>
@@ -120,6 +132,18 @@ export default function TreeRegPage() {
                     if (step < 4) {
                       setStep(step + 1)
                     } else {
+                      const lat = parseFloat(coords.lat)
+                      const lng = parseFloat(coords.lng)
+                      if (!isNaN(lat) && !isNaN(lng)) {
+                        addUserTree({
+                          name: treeName || "Unnamed tree",
+                          species: species || "Unspecified",
+                          location: `${city}, ${country}`.replace(/^, |, $/, ""),
+                          lat,
+                          lng,
+                          status: "pending",
+                        })
+                      }
                       setSubmitted(true)
                     }
                   }}
@@ -128,7 +152,13 @@ export default function TreeRegPage() {
                   {step === 1 && (
                     <div className="flex flex-col gap-5">
                       <SectionHeading title="Tree Details" subtitle="What did you plant?" />
-                      <Field label="Tree name" placeholder="Give this tree a name, e.g. Grandma's Neem" required />
+                      <Field
+                        label="Tree name"
+                        placeholder="Give this tree a name, e.g. Grandma's Neem"
+                        required
+                        value={treeName}
+                        onChange={setTreeName}
+                      />
                       <div>
                         <label className="mb-2 block text-sm text-white/70">
                           Species / type
@@ -137,6 +167,8 @@ export default function TreeRegPage() {
                           list="species-suggestions"
                           placeholder="Type a species — e.g. Neem, Mango, or anything else"
                           required
+                          value={species}
+                          onChange={(e) => setSpecies(e.target.value)}
                           className="w-full rounded-lg border border-white/10 bg-[#050508] px-4 py-3 text-sm text-white outline-none transition-colors focus:border-[#1db954]/60"
                         />
                         <datalist id="species-suggestions">
@@ -198,8 +230,8 @@ export default function TreeRegPage() {
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <Field label="City/Town" placeholder="Lagos" required />
-                        <Field label="Country" placeholder="Nigeria" required />
+                        <Field label="City/Town" placeholder="Lagos" required value={city} onChange={setCity} />
+                        <Field label="Country" placeholder="Nigeria" required value={country} onChange={setCountry} />
                       </div>
                       <Select label="Land ownership" options={landOwnership} required />
                     </div>

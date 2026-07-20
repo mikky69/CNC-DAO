@@ -110,7 +110,7 @@ export function PersonaCard() {
         <div className="mb-2 truncate text-xs font-semibold" style={{ color: role.color }}>
           {role.label}
         </div>
-        <Link href="/profile" className="text-xs text-white/50 underline hover:text-white/80">
+        <Link href="/dashboard" className="text-xs text-white/50 underline hover:text-white/80">
           View full profile
         </Link>
       </div>

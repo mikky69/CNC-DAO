@@ -117,3 +117,26 @@ export function SocialIcon({ name, className = "" }: { name: keyof typeof social
     </svg>
   )
 }
+
+const badgePaths: Record<string, string> = {
+  seed: "M12 21c-4.4 0-8-3.6-8-8 0-6 8-11 8-11s8 5 8 11c0 4.4-3.6 8-8 8Z",
+  leaf: "M4 20c8-1 13-6 14-14-8 1-13 6-14 14Zm0 0c2-4 4-6 8-8",
+  shield: "M12 3l7 3v6c0 4.5-3 8.5-7 9-4-.5-7-4.5-7-9V6l7-3Zm-3 9l2 2 4-4",
+  globe: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-9-9h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18",
+  star: "M12 2l2.9 6.3 6.9.7-5.2 4.7 1.6 6.8L12 17l-6.2 3.5 1.6-6.8L2.2 9l6.9-.7L12 2Z",
+  crown: "M3 8l4 3 5-6 5 6 4-3-2 11H5L3 8Zm2 13h14",
+}
+
+export function BadgeIcon({
+  name,
+  className = "",
+}: {
+  name: keyof typeof badgePaths
+  className?: string
+}) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path d={badgePaths[name]} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}

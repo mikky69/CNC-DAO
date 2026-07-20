@@ -27,7 +27,7 @@ export default function ConnectWalletPage() {
     // Mock connection — no real wallet adapter wired up yet. See
     // lib/mockAuth.ts and README.md for what real wallet integration needs.
     connectMockWallet()
-    router.push("/profile")
+    router.push("/dashboard")
   }
 
   return (

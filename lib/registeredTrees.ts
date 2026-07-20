@@ -76,6 +76,27 @@ export function addUserTree(tree: Omit<RegisteredTree, "id">) {
   return newTree
 }
 
+/**
+ * Approve/reject actions for the Nature Hero validation queue. This is a
+ * stand-in for the real 2-of-2 verification flow — it just flips status
+ * locally. Real implementation needs the actual two-independent-Heroes
+ * consensus logic server-side/on-chain before anything is "verified".
+ */
+export function updateTreeStatus(id: string, status: RegisteredTree["status"]) {
+  if (typeof window === "undefined") return
+  const existing = getUserTrees()
+  const updated = existing.map((t) => (t.id === id ? { ...t, status } : t))
+  localStorage.setItem(USER_TREES_KEY, JSON.stringify(updated))
+  window.dispatchEvent(new Event("trees:change"))
+}
+
+export function removeUserTree(id: string) {
+  if (typeof window === "undefined") return
+  const existing = getUserTrees()
+  localStorage.setItem(USER_TREES_KEY, JSON.stringify(existing.filter((t) => t.id !== id)))
+  window.dispatchEvent(new Event("trees:change"))
+}
+
 // Rough equirectangular projection — turns lat/lng into the x/y percentage
 // positions TreeMap's flat abstract grid uses for pin placement.
 export function latLngToXY(lat: number, lng: number) {

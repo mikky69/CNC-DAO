@@ -19,6 +19,7 @@ export type MockUser = {
   walletAddress: string
   role: UserRole
   displayName?: string
+  bio?: string
   avatar?: string // base64 data URL — see setAvatar() for size caveats
   joinedAt: string
 }
@@ -60,6 +61,21 @@ export function submitNatureHeroApplication() {
 export function setDisplayName(displayName: string) {
   const user = getMockUser() ?? connectMockWallet()
   setMockUser({ ...user, displayName })
+}
+
+export function setBio(bio: string) {
+  const user = getMockUser() ?? connectMockWallet()
+  setMockUser({ ...user, bio })
+}
+
+/**
+ * Demo-only — lets you preview the user/nature_hero/admin dashboard
+ * variants without a real approval backend. Remove once real role
+ * assignment (backend-verified) exists.
+ */
+export function setRole(role: UserRole) {
+  const user = getMockUser() ?? connectMockWallet()
+  setMockUser({ ...user, role })
 }
 
 /**

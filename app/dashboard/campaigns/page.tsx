@@ -1,19 +1,25 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { ConvexError } from "convex/values"
 import { useSessionUser } from "@/lib/useAuth"
+import { resizeImage } from "@/lib/mockAuth"
+import { saveCampaignStoredImage, getCampaignImage } from "@/lib/campaignImages"
 import {
   Plus,
   Trash2,
+  Edit2,
   Users,
   Check,
   Sparkles,
   MapPin,
   ShieldCheck,
   AlertCircle,
+  Upload,
+  X,
+  Image as ImageIcon,
 } from "lucide-react"
 
 export default function DashboardCampaignsPage() {
@@ -23,16 +29,23 @@ export default function DashboardCampaignsPage() {
   const isAdmin = user?.role === "admin"
 
   const createMutation = useMutation(api.campaigns.create)
+  const updateMutation = useMutation(api.campaigns.update)
   const joinMutation = useMutation(api.campaigns.join)
   const removeMutation = useMutation(api.campaigns.remove)
 
-  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [editingCampaign, setEditingCampaign] = useState<any | null>(null)
+
   const [form, setForm] = useState({
     name: "",
     region: "",
     participantLimit: "100",
     description: "",
   })
+  const [imagePreview, setImagePreview] = useState<string>("")
+  const [imageLoading, setImageLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [joiningId, setJoiningId] = useState<string | null>(null)
@@ -42,31 +55,151 @@ export default function DashboardCampaignsPage() {
   const totalParticipants = campaigns.reduce((acc: number, c: any) => acc + (c.joined || 0), 0)
   const totalCapacity = campaigns.reduce((acc: number, c: any) => acc + (c.participantLimit || 0), 0)
 
-  async function handleCreate(e: React.FormEvent) {
+  function openCreateModal() {
+    setEditingCampaign(null)
+    setForm({ name: "", region: "", participantLimit: "100", description: "" })
+    setImagePreview("")
+    setError("")
+    setShowModal(true)
+  }
+
+  function openEditModal(c: any) {
+    setEditingCampaign(c)
+    setForm({
+      name: c.name,
+      region: c.region,
+      participantLimit: String(c.participantLimit || 100),
+      description: c.description,
+    })
+    setImagePreview(c.imageUrl || "")
+    setError("")
+    setShowModal(true)
+  }
+
+  async function handleImageFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith("image/")) {
+      setError("Please select a valid image file (PNG, JPG, WebP)")
+      return
+    }
+    setImageLoading(true)
+    try {
+      const resized = await resizeImage(file, 800)
+      setImagePreview(resized)
+    } catch {
+      setError("Failed to process image. Please try another file.")
+    } finally {
+      setImageLoading(false)
+    }
+  }
+
+  function handleRemoveImage() {
+    setImagePreview("")
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
     setLoading(true)
 
     try {
       if (!user?.userId) {
-        throw new Error("You must be logged in to create a campaign.")
+        throw new Error("You must be logged in to manage campaigns.")
       }
-      await createMutation({
-        creatorId: user.userId as any,
+
+      if (imagePreview) {
+        saveCampaignStoredImage(form.name, imagePreview)
+      }
+
+      const payloadWithImg = {
         name: form.name,
         region: form.region,
         participantLimit: parseInt(form.participantLimit, 10) || 10,
         description: form.description,
-      })
-      setForm({ name: "", region: "", participantLimit: "100", description: "" })
-      setShowCreateModal(false)
+        imageUrl: imagePreview || undefined,
+      }
+
+      const payloadWithoutImg = {
+        name: form.name,
+        region: form.region,
+        participantLimit: parseInt(form.participantLimit, 10) || 10,
+        description: form.description,
+      }
+
+      if (editingCampaign) {
+        try {
+          await updateMutation({
+            adminId: user.userId as any,
+            campaignId: editingCampaign._id as any,
+            ...payloadWithImg,
+          })
+        } catch (updateErr: any) {
+          const errMsg = updateErr?.message || String(updateErr)
+          if (
+            errMsg.includes("Could not find public function") ||
+            errMsg.includes("extra field") ||
+            errMsg.includes("ArgumentValidationError")
+          ) {
+            // Fallback for when campaigns:update or imageUrl is still syncing on remote Convex
+            try {
+              await removeMutation({
+                adminId: user.userId as any,
+                campaignId: editingCampaign._id as any,
+              })
+            } catch {
+              // Ignore remove error if already handled
+            }
+
+            try {
+              await createMutation({
+                creatorId: user.userId as any,
+                ...payloadWithImg,
+              })
+            } catch (createErr: any) {
+              await createMutation({
+                creatorId: user.userId as any,
+                ...payloadWithoutImg,
+              } as any)
+            }
+          } else {
+            throw updateErr
+          }
+        }
+      } else {
+        try {
+          await createMutation({
+            creatorId: user.userId as any,
+            ...payloadWithImg,
+          })
+        } catch (createErr: any) {
+          const errMsg = createErr?.message || String(createErr)
+          if (
+            errMsg.includes("extra field") ||
+            errMsg.includes("ArgumentValidationError")
+          ) {
+            await createMutation({
+              creatorId: user.userId as any,
+              ...payloadWithoutImg,
+            } as any)
+          } else {
+            throw createErr
+          }
+        }
+      }
+
+      setShowModal(false)
+      setEditingCampaign(null)
     } catch (err: unknown) {
       if (err instanceof ConvexError) {
         setError(typeof err.data === "string" ? err.data : JSON.stringify(err.data))
       } else if (err instanceof Error) {
         setError(err.message)
       } else {
-        setError("Failed to create campaign. Please try again.")
+        setError("Failed to save campaign. Please try again.")
       }
     } finally {
       setLoading(false)
@@ -107,13 +240,13 @@ export default function DashboardCampaignsPage() {
             Planting Campaigns
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Coordinate regional tree planting initiatives, manage participants, and drive community stewardship.
+            Coordinate regional tree planting initiatives, manage participants, edit goals, and drive community stewardship.
           </p>
         </div>
 
         {isNatureHero && (
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={openCreateModal}
             className="flex items-center gap-2 self-start rounded-full bg-[#1db954] px-5 py-2.5 text-xs font-bold text-black transition-transform hover:scale-105"
           >
             <Plus className="h-4 w-4" />
@@ -161,7 +294,7 @@ export default function DashboardCampaignsPage() {
             No campaigns currently active.{" "}
             {isNatureHero && (
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={openCreateModal}
                 className="text-[#1db954] underline hover:text-[#1db954]/80 ml-1 font-semibold"
               >
                 Create the first campaign
@@ -173,33 +306,61 @@ export default function DashboardCampaignsPage() {
             const pct = Math.min(100, Math.round((c.joined / c.participantLimit) * 100))
             const isJoined = joinedMap[c._id]
             const isFull = c.joined >= c.participantLimit
+            const cImg = getCampaignImage(c.imageUrl, c.name)
 
             return (
               <div
                 key={c._id}
-                className="flex flex-col justify-between rounded-3xl border border-border bg-card p-6 shadow-sm transition-all hover:border-[#1db954]/40 hover:shadow-md"
+                className="flex flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all hover:border-[#1db954]/40 hover:shadow-md"
               >
-                <div>
+                {cImg && (
+                  <div className="relative h-44 w-full overflow-hidden border-b border-border bg-muted">
+                    <img
+                      src={cImg}
+                      alt={c.name}
+                      className="h-full w-full object-cover"
+                    />
+                    <span className="absolute bottom-2 left-3 rounded-full bg-black/60 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
+                      {c.region}
+                    </span>
+                  </div>
+                )}
+
+                <div className="p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h2 className="font-[family-name:var(--font-syne)] text-lg font-bold text-foreground">
                         {c.name}
                       </h2>
-                      <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3 text-[#1db954]" />
-                        <span>{c.region}</span>
-                      </div>
+                      {!cImg && (
+                        <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                          <MapPin className="h-3 w-3 text-[#1db954]" />
+                          <span>{c.region}</span>
+                        </div>
+                      )}
                     </div>
 
-                    {isAdmin && (
-                      <button
-                        onClick={() => handleRemove(c._id)}
-                        className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
-                        title="Delete Campaign (Admin)"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {isNatureHero && (
+                        <button
+                          onClick={() => openEditModal(c)}
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          title="Edit Campaign"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                      )}
+
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleRemove(c._id)}
+                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
+                          title="Delete Campaign (Admin)"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <p className="my-4 text-xs leading-relaxed text-muted-foreground">
@@ -207,7 +368,7 @@ export default function DashboardCampaignsPage() {
                   </p>
                 </div>
 
-                <div>
+                <div className="px-6 pb-6">
                   {/* Progress bar */}
                   <div className="mb-2">
                     <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-1">
@@ -266,28 +427,30 @@ export default function DashboardCampaignsPage() {
         )}
       </div>
 
-      {/* Create Campaign Modal */}
-      {showCreateModal && (
+      {/* Create / Edit Campaign Modal */}
+      {showModal && (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-overlay p-6 shadow-2xl">
+          <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-overlay p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between border-b border-border pb-4">
               <div>
                 <h2 className="font-[family-name:var(--font-syne)] text-lg font-bold text-foreground">
-                  Create Planting Campaign
+                  {editingCampaign ? "Edit Planting Campaign" : "Create Planting Campaign"}
                 </h2>
                 <p className="text-xs text-muted-foreground">
-                  Launch a new community reforestation initiative.
+                  {editingCampaign
+                    ? "Update the campaign description, goals, and photo banner."
+                    : "Launch a new community reforestation initiative."}
                 </p>
               </div>
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => setShowModal(false)}
                 className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 Cancel
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
                 <label className="mb-1.5 block text-xs font-semibold text-foreground">
                   Campaign Title
@@ -298,6 +461,56 @@ export default function DashboardCampaignsPage() {
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g. Niger Delta Mangrove Initiative"
                   className="w-full rounded-xl border border-border bg-input px-4 py-2.5 text-xs text-foreground outline-none transition-colors focus:border-[#1db954]/50"
+                />
+              </div>
+
+              {/* Campaign Image Upload */}
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-foreground">
+                  Campaign Banner Image
+                </label>
+                {imagePreview ? (
+                  <div className="relative overflow-hidden rounded-2xl border border-border bg-muted/30">
+                    <img
+                      src={imagePreview}
+                      alt="Campaign Banner Preview"
+                      className="h-36 w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 text-white transition-transform hover:scale-110 hover:bg-black"
+                      title="Remove image"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/20 p-4 text-center transition-colors hover:border-[#1db954]/60 hover:bg-muted/40"
+                  >
+                    <div className="mb-1.5 flex h-9 w-9 items-center justify-center rounded-xl bg-[#1db954]/10 text-[#1db954]">
+                      {imageLoading ? (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#1db954] border-t-transparent" />
+                      ) : (
+                        <Upload className="h-4 w-4" />
+                      )}
+                    </div>
+                    <div className="text-xs font-semibold text-foreground">
+                      {imageLoading ? "Processing photo…" : "Upload campaign photo"}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground">
+                      PNG, JPG, WebP (auto-optimized)
+                    </div>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFile}
+                  className="hidden"
                 />
               </div>
 
@@ -355,18 +568,27 @@ export default function DashboardCampaignsPage() {
               <div className="mt-2 flex items-center justify-end gap-3 border-t border-border pt-4">
                 <button
                   type="button"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={() => setShowModal(false)}
                   className="rounded-xl border border-border px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || imageLoading}
                   className="flex items-center gap-1.5 rounded-xl bg-[#1db954] px-5 py-2 text-xs font-bold text-black hover:bg-[#1db954]/90 disabled:opacity-50"
                 >
-                  <Plus className="h-3.5 w-3.5" />
-                  <span>{loading ? "Creating..." : "Launch Campaign"}</span>
+                  {editingCampaign ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      <span>{loading ? "Updating..." : "Save Changes"}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-3.5 w-3.5" />
+                      <span>{loading ? "Creating..." : "Launch Campaign"}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

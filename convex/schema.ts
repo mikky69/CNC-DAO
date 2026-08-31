@@ -48,6 +48,7 @@ export default defineSchema({
     location: v.string(),
     lat: v.number(),
     lng: v.number(),
+    imageUrl: v.optional(v.string()),
     status: treeStatuses,
     createdAt: v.string(),
   })
@@ -74,6 +75,7 @@ export default defineSchema({
     region: v.string(),
     participantLimit: v.number(),
     description: v.string(),
+    imageUrl: v.optional(v.string()),
     createdBy: v.string(),
     createdByWallet: v.string(),
     joined: v.number(),

@@ -9,7 +9,8 @@ import { Footer } from "@/components/Footer"
 import { Reveal } from "@/components/Reveal"
 import { IconArrow } from "@/components/Icons"
 import { useSessionUser } from "@/lib/useAuth"
-import { Trash2, Users, Check, Sparkles, MapPin } from "lucide-react"
+import { getCampaignImage } from "@/lib/campaignImages"
+import { Sparkles, Users, Check, MapPin, Edit2, Trash2, ArrowRight } from "lucide-react"
 
 export default function CampaignsPage() {
   const user = useSessionUser()
@@ -100,33 +101,61 @@ export default function CampaignsPage() {
               const pct = Math.min(100, Math.round((c.joined / c.participantLimit) * 100))
               const isJoined = joinedMap[c._id]
               const isFull = c.joined >= c.participantLimit
+              const cImg = getCampaignImage(c.imageUrl, c.name)
 
               return (
                 <div
                   key={c._id}
-                  className="relative flex flex-col justify-between rounded-3xl border border-border bg-card p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#1db954]/40 hover:shadow-md"
+                  className="relative flex flex-col justify-between overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#1db954]/40 hover:shadow-md"
                 >
-                  <div>
+                  {cImg && (
+                    <div className="relative h-44 w-full overflow-hidden border-b border-border bg-muted">
+                      <img
+                        src={cImg}
+                        alt={c.name}
+                        className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                      <span className="absolute bottom-2 left-3 rounded-full bg-black/60 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
+                        {c.region}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="p-6">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="mb-1 font-[family-name:var(--font-syne)] text-lg font-bold text-foreground">
                           {c.name}
                         </h3>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <MapPin className="h-3 w-3 text-[#1db954]" />
-                          <span>{c.region}</span>
-                        </div>
+                        {!cImg && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 text-[#1db954]" />
+                            <span>{c.region}</span>
+                          </div>
+                        )}
                       </div>
 
-                      {isAdmin && (
-                        <button
-                          onClick={() => handleRemove(c._id)}
-                          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
-                          title="Delete campaign (Admin)"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
+                      <div className="flex items-center gap-1">
+                        {isNatureHero && (
+                          <Link
+                            href="/dashboard/campaigns"
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                            title="Edit Campaign in Dashboard"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Link>
+                        )}
+
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleRemove(c._id)}
+                            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
+                            title="Delete campaign (Admin)"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     <p className="my-3 text-xs leading-relaxed text-muted-foreground line-clamp-2">
@@ -134,7 +163,7 @@ export default function CampaignsPage() {
                     </p>
                   </div>
 
-                  <div>
+                  <div className="px-6 pb-6">
                     <div className="mb-2 h-2 w-full overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-full rounded-full bg-[#1db954] transition-all duration-500"

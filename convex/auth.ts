@@ -53,14 +53,14 @@ export const signup = mutation({
       walletAddress: args.walletAddress,
       country: args.country,
       isActive: true,
-      createdAt: now,
+      joinedAt: new Date().toISOString(),
     })
 
     const token = generateToken()
     await ctx.db.insert("sessions", {
       userId,
       token,
-      expiresAt: now + 7 * 24 * 60 * 60 * 1000, // 7 days
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
     })
 
     return { userId, token }
@@ -87,7 +87,7 @@ export const login = mutation({
       throw new Error("Account is deactivated")
     }
 
-    const isValid = await verifyPassword(args.password, user.passwordHash)
+    const isValid = await verifyPassword(args.password, user.passwordHash ?? "")
     if (!isValid) {
       throw new Error("Invalid email or password")
     }
@@ -97,7 +97,7 @@ export const login = mutation({
     await ctx.db.insert("sessions", {
       userId: user._id,
       token,
-      expiresAt: now + 7 * 24 * 60 * 60 * 1000, // 7 days
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
     })
 
     return { userId: user._id, token, role: user.role }
@@ -130,7 +130,7 @@ export const getCurrentUser = query({
       .withIndex("by_token", (q) => q.eq("token", args.token))
       .first()
 
-    if (!session || session.expiresAt < Date.now()) {
+    if (!session || new Date(session.expiresAt) < new Date()) {
       return null
     }
 
@@ -148,9 +148,9 @@ export const getCurrentUser = query({
       country: user.country,
       region: user.region,
       bio: user.bio,
-      avatarUrl: user.avatarUrl,
+      avatar: user.avatar,
       isActive: user.isActive,
-      createdAt: user.createdAt,
+      createdAt: user.joinedAt,
     }
   },
 })
@@ -164,7 +164,7 @@ export const validateToken = query({
       .withIndex("by_token", (q) => q.eq("token", args.token))
       .first()
 
-    if (!session || session.expiresAt < Date.now()) {
+    if (!session || new Date(session.expiresAt) < new Date()) {
       return null
     }
 

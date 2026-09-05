@@ -2,9 +2,8 @@
 
 import { useState, useRef, useCallback } from "react"
 import Link from "next/link"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import { latLngToXY } from "@/lib/registeredTrees"
+import { latLngToXY, type RegisteredTree } from "@/lib/registeredTrees"
+import { useAllTrees } from "@/lib/useTrees"
 import { useTheme } from "next-themes"
 
 type TreeStatus = "verified" | "minted" | "pending"
@@ -45,19 +44,11 @@ export default function TreeMap() {
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [showList, setShowList] = useState(true)
   const dragRef = useRef<{ startX: number; startY: number; panX: number; panY: number } | null>(null)
-  const dbTrees = useQuery(api.trees.listAll) ?? []
-  const trees: Tree[] = dbTrees.map((t) => {
+  const allTrees = useAllTrees()
+  const trees: Tree[] = allTrees.map((t: RegisteredTree) => {
     const { x, y } = latLngToXY(t.lat, t.lng)
     const country = t.location.split(",").pop()?.trim() ?? t.location
-    return {
-      id: t._id,
-      name: t.name,
-      location: t.location,
-      country,
-      status: t.status as TreeStatus,
-      x,
-      y,
-    }
+    return { id: t.id, name: t.name, location: t.location, country, status: t.status, x, y }
   })
 
   const filteredTrees = trees.filter((t) => {

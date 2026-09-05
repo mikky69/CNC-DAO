@@ -35,10 +35,10 @@ export default defineSchema({
     displayName: v.optional(v.string()),
     bio: v.optional(v.string()),
     avatar: v.optional(v.string()),
-    role: userRoles,
     country: v.optional(v.string()),
     region: v.optional(v.string()),
     isActive: v.optional(v.boolean()),
+    role: userRoles,
     joinedAt: v.string(),
   })
     .index("by_email", ["email"])
@@ -68,6 +68,8 @@ export default defineSchema({
     motivation: v.string(),
     experience: v.optional(v.string()),
     status: applicationStatuses,
+    reviewedBy: v.optional(v.string()),
+    reason: v.optional(v.string()),
     submittedAt: v.string(),
   })
     .index("by_status", ["status"])
@@ -85,17 +87,6 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_createdAt", ["createdAt"]),
 
-  contactMessages: defineTable({
-    name: v.string(),
-    email: v.string(),
-    message: v.string(),
-    status: messageStatuses,
-    createdAt: v.string(),
-  })
-    .index("by_status", ["status"])
-    .index("by_createdAt", ["createdAt"]),
-
-  // Auth sessions — used by convex/auth.ts for token-based sessions
   sessions: defineTable({
     userId: v.id("users"),
     token: v.string(),
@@ -105,39 +96,26 @@ export default defineSchema({
     .index("by_token", ["token"])
     .index("by_userId", ["userId"]),
 
-  // Validator applications — used by convex/validators.ts and convex/admin.ts
-  validatorApplications: defineTable({
-    userId: v.id("users"),
-    walletAddress: v.string(),
-    region: v.string(),
-    motivation: v.string(),
-    experience: v.optional(v.string()),
-    status: applicationStatuses,
-    decision: v.optional(v.string()),
-    reason: v.optional(v.string()),
-    reviewedBy: v.optional(v.string()),
-    createdAt: v.optional(v.string()),
-    submittedAt: v.string(),
-  })
-    .index("by_userId", ["userId"])
-    .index("by_status", ["status"]),
-
-  // Tree validations — used by convex/validators.ts (2-of-2 verification)
   validations: defineTable({
     treeId: v.id("trees"),
     validatorId: v.id("users"),
     validatorWallet: v.string(),
     approved: v.boolean(),
     decision: v.optional(v.string()),
-    notes: v.optional(v.string()),
     status: v.optional(v.string()),
+    notes: v.optional(v.string()),
     createdAt: v.string(),
   })
-    .index("by_treeId_validatorId", ["treeId", "validatorId"])
     .index("by_treeId", ["treeId"])
-    .index("by_validatorId", ["validatorId"]),
+    .index("by_validatorId", ["validatorId"])
+    .index("by_treeId_validatorId", ["treeId", "validatorId"]),
 
-  // Admin audit log — used by convex/admin.ts
+  stats: defineTable({
+    key: v.string(),
+    value: v.number(),
+    updatedAt: v.optional(v.string()),
+  }).index("by_key", ["key"]),
+
   adminActions: defineTable({
     adminId: v.id("users"),
     action: v.string(),
@@ -147,10 +125,13 @@ export default defineSchema({
     createdAt: v.string(),
   }).index("by_adminId", ["adminId"]),
 
-  // Platform-wide stats cache — used by convex/stats.ts
-  stats: defineTable({
-    key: v.string(),
-    value: v.number(),
-    updatedAt: v.optional(v.string()),
-  }).index("by_key", ["key"]),
+  contactMessages: defineTable({
+    name: v.string(),
+    email: v.string(),
+    message: v.string(),
+    status: messageStatuses,
+    createdAt: v.string(),
+  })
+    .index("by_status", ["status"])
+    .index("by_createdAt", ["createdAt"]),
 })

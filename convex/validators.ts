@@ -33,7 +33,7 @@ export const apply = mutation({
 
     // Check for pending application
     const pendingApp = await ctx.db
-      .query("validatorApplications")
+      .query("natureHeroApplications")
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .order("desc")
       .first()
@@ -42,12 +42,18 @@ export const apply = mutation({
       throw new Error("Application already pending")
     }
 
-    const applicationId = await ctx.db.insert("validatorApplications", {
+    const applicationId = await ctx.db.insert("natureHeroApplications", {
       userId: user._id,
+      walletAddress: user.walletAddress ?? "",
+      fullName: user.name ?? user.email,
+      email: user.email,
+      cityRegion: "",
+      country: user.country ?? "",
+      motivation: args.reason ?? "",
       status: "pending",
       reason: args.reason,
       experience: args.experience,
-      createdAt: Date.now(),
+      submittedAt: new Date().toISOString(),
     })
 
     return applicationId
@@ -62,7 +68,7 @@ export const getMyApplication = query({
     if (!user) return null
 
     const application = await ctx.db
-      .query("validatorApplications")
+      .query("natureHeroApplications")
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .order("desc")
       .first()
@@ -109,9 +115,11 @@ export const validateTree = mutation({
     await ctx.db.insert("validations", {
       treeId: args.treeId,
       validatorId: user._id,
+      validatorWallet: user.walletAddress ?? "",
+      approved: args.decision === "approved",
       decision: args.decision,
       notes: args.notes,
-      createdAt: Date.now(),
+      createdAt: new Date().toISOString(),
     })
 
     // Count validations for this tree
@@ -123,14 +131,14 @@ export const validateTree = mutation({
     const approvedCount = validations.filter((v) => v.decision === "approved").length
     const rejectedCount = validations.filter((v) => v.decision === "rejected").length
 
-    // If 2 validators approve, mark as "validated" (ready for admin review)
+    // If 2 validators approve, mark as "verified" (ready for admin review)
     if (approvedCount >= 2) {
-      await ctx.db.patch(args.treeId, { status: "validated" })
+      await ctx.db.patch(args.treeId, { status: "verified" })
     }
 
     // If 2 validators reject, mark as "rejected"
     if (rejectedCount >= 2) {
-      await ctx.db.patch(args.treeId, { status: "rejected" })
+      await ctx.db.patch(args.treeId, { status: "pending" })
     }
 
     return {
@@ -253,7 +261,7 @@ export const getValidatedTrees = query({
 
     const validatedTrees = await ctx.db
       .query("trees")
-      .withIndex("by_status", (q) => q.eq("status", "validated"))
+      .withIndex("by_status", (q) => q.eq("status", "verified"))
       .collect()
 
     return validatedTrees

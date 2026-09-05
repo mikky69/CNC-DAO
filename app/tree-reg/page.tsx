@@ -47,6 +47,17 @@ export default function TreeRegPage() {
   const [species, setSpecies] = useState("")
   const [city, setCity] = useState("")
   const [country, setCountry] = useState("")
+  const [formData, setFormData] = useState({
+    height: "",
+    age: "",
+    notes: "",
+    landOwnership: "",
+    planterName: "",
+    planterEmail: "",
+  })
+  function handleChange(key: keyof typeof formData, value: string) {
+    setFormData((prev) => ({ ...prev, [key]: value }))
+  }
   const [treePhoto, setTreePhoto] = useState<string>("")
   const [photoLoading, setPhotoLoading] = useState(false)
   const [geoStatus, setGeoStatus] = useState<"idle" | "locating" | "granted" | "denied" | "unsupported">(
@@ -269,21 +280,21 @@ export default function TreeRegPage() {
                           label="Approx. height (m)"
                           type="number"
                           placeholder="1.5"
-                          
-                          
+                          value={formData.height}
+                          onChange={(v) => handleChange("height", v)}
                         />
                         <Field
                           label="Approx. age"
                           placeholder="e.g. 6 months"
-                          
-                          
+                          value={formData.age}
+                          onChange={(v) => handleChange("age", v)}
                         />
                       </div>
                       <TextArea
                         label="Additional notes"
                         placeholder="Anything else Nature Heroes should know — soil type, nearby landmarks, etc."
-                        
-                        
+                        value={formData.notes}
+                        onChange={(v) => handleChange("notes", v)}
                       />
                     </div>
                   )}
@@ -334,8 +345,8 @@ export default function TreeRegPage() {
                       <Select
                         label="Land ownership"
                         options={landOwnership}
-                        
-                        
+                        value={formData.landOwnership}
+                        onChange={(v) => handleChange("landOwnership", v)}
                         required
                       />
                     </div>
@@ -409,15 +420,15 @@ export default function TreeRegPage() {
                       />
                       <Field
                         label="Full name"
-                        
-                        
+                        value={formData.planterName}
+                        onChange={(v) => handleChange("planterName", v)}
                         required
                       />
                       <Field
                         label="Email"
                         type="email"
-                        
-                        
+                        value={formData.planterEmail}
+                        onChange={(v) => handleChange("planterEmail", v)}
                         required
                       />
                       <div>

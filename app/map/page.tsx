@@ -18,7 +18,6 @@ const OSMTreeMap = dynamic(() => import("@/components/OSMTreeMap"), {
   ),
 })
 
-
 export default function MapPage() {
   return (
     <main className="bg-background text-foreground font-[family-name:var(--font-space-grotesk)]">

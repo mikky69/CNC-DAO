@@ -27,13 +27,16 @@ export default function ConnectWalletPage() {
   const connectWalletMutation = useMutation(api.users.connectWallet)
 
   // Once a wallet is actually connected (publicKey exists), save to Convex
-  // and redirect to the dashboard.
+  // in the background and redirect immediately — don't wait for the mutation
+  // to complete or the user stays stuck on the connect page.
   useEffect(() => {
     if (!connected || !publicKey) return
     const address = publicKey.toBase58()
-    connectWalletMutation({ walletAddress: address })
-      .then(() => router.push("/dashboard"))
-      .catch((err) => console.error("Wallet save error:", err))
+    // Fire mutation in background — don't block redirect on it
+    connectWalletMutation({ walletAddress: address }).catch((err) =>
+      console.error("Wallet save error:", err)
+    )
+    router.push("/dashboard")
   }, [connected, publicKey]) // eslint-disable-line
 
   function handleWalletConnect() {

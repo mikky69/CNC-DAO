@@ -10,6 +10,7 @@ import { Reveal } from "@/components/Reveal"
 import { FlipCard } from "@/components/FlipCard"
 import { PersonaCard } from "@/components/PersonaCard"
 import { LiveStats } from "@/components/LiveStats"
+import { WalletRedirect } from "@/components/WalletRedirect"
 
 const steps = [
   {
@@ -133,6 +134,7 @@ const testimonials = [
 export default function Home() {
   return (
     <main className="bg-background text-foreground font-[family-name:var(--font-space-grotesk)]">
+      <WalletRedirect />
       {/* ---------- Nav ---------- */}
       <Header />
 

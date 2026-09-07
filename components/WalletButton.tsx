@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { signOut, useSession } from "next-auth/react"
+import { useMutation } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import { useSessionUser } from "@/lib/useAuth"
 
 function shortAddress(addr: string) {
@@ -29,6 +30,23 @@ export function WalletButton({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const hasRedirected = useRef(false)
+  const connectWalletMutation = useMutation(api.users.connectWallet)
+
+  // Watch for wallet connection from anywhere and redirect to dashboard once.
+  // Ref guard prevents the redirect loop.
+  useEffect(() => {
+    if (!connected || !publicKey || hasRedirected.current) return
+    hasRedirected.current = true
+    const address = publicKey.toBase58()
+    connectWalletMutation({ walletAddress: address }).catch(console.error)
+    router.push("/dashboard")
+  }, [connected, publicKey]) // eslint-disable-line
+
+  // Reset guard when wallet disconnects so reconnecting works
+  useEffect(() => {
+    if (!connected) hasRedirected.current = false
+  }, [connected])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -39,21 +57,21 @@ export function WalletButton({ className = "" }: { className?: string }) {
     return () => document.removeEventListener("mousedown", handleClick)
   }, [])
 
-  // Determine display label — prefer wallet address, fall back to session email
   const walletLabel = connected && publicKey ? shortAddress(publicKey.toBase58()) : null
-  const sessionLabel = sessionUser ? formatUserLabel(sessionUser.walletAddress ?? session?.user?.email ?? session?.user?.name ?? "") : null
+  const sessionLabel = sessionUser
+    ? formatUserLabel(sessionUser.walletAddress ?? session?.user?.email ?? session?.user?.name ?? "")
+    : null
   const label = walletLabel ?? sessionLabel
-
   const isConnected = connected || !!sessionUser
 
   if (!isConnected) {
     return (
-      <Link
-        href="/connect-wallet"
+      <button
+        onClick={() => setVisible(true)}
         className={`rounded-full bg-[#1db954] px-4 py-2 text-xs font-medium text-white transition-transform duration-200 hover:scale-105 sm:px-5 sm:py-2.5 sm:text-sm ${className}`}
       >
         Connect Wallet
-      </Link>
+      </button>
     )
   }
 
@@ -80,7 +98,7 @@ export function WalletButton({ className = "" }: { className?: string }) {
           {walletLabel && (
             <div className="border-b border-white/10 px-4 py-2.5">
               <div className="text-[10px] text-white/40 uppercase tracking-wide">Solana wallet</div>
-              <div className="font-mono text-xs text-white/80">{publicKey?.toBase58()}</div>
+              <div className="font-mono text-[10px] text-white/80 truncate">{publicKey?.toBase58()}</div>
             </div>
           )}
           <button

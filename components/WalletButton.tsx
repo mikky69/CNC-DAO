@@ -30,22 +30,31 @@ export function WalletButton({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
-  const hasRedirected = useRef(false)
   const connectWalletMutation = useMutation(api.users.connectWallet)
 
-  // Watch for wallet connection from anywhere and redirect to dashboard once.
-  // Ref guard prevents the redirect loop.
+  // Use sessionStorage instead of a ref so the guard persists across
+  // header remounts (which happen on every page navigation).
+  const SESSION_KEY = "cncdao_wallet_redirected"
+
   useEffect(() => {
-    if (!connected || !publicKey || hasRedirected.current) return
-    hasRedirected.current = true
+    if (!connected || !publicKey) return
+    if (typeof window === "undefined") return
+    // Already redirected this session — don't do it again
+    if (sessionStorage.getItem(SESSION_KEY)) return
+    // Already on dashboard or a protected page — don't redirect
+    const path = window.location.pathname
+    if (path.startsWith("/dashboard") || path.startsWith("/profile")) return
+    sessionStorage.setItem(SESSION_KEY, "1")
     const address = publicKey.toBase58()
     connectWalletMutation({ walletAddress: address }).catch(console.error)
     router.push("/dashboard")
   }, [connected, publicKey]) // eslint-disable-line
 
-  // Reset guard when wallet disconnects so reconnecting works
+  // Clear the session flag when wallet disconnects so reconnecting works
   useEffect(() => {
-    if (!connected) hasRedirected.current = false
+    if (!connected && typeof window !== "undefined") {
+      sessionStorage.removeItem(SESSION_KEY)
+    }
   }, [connected])
 
   // Close dropdown on outside click

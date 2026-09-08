@@ -2,7 +2,6 @@ import { Syne, Space_Grotesk, Space_Mono, DM_Sans } from "next/font/google"
 import "./globals.css"
 import { SessionProvider } from "@/components/SessionProvider"
 import { ConvexClientProvider } from "@/providers/ConvexProvider"
-import { SolanaProvider } from "@/providers/SolanaProvider"
 import { AutoLogout } from "@/components/AutoLogout"
 import { ThemeProvider } from "@/components/ThemeProvider"
 
@@ -30,14 +29,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${syne.variable} ${dmSans.variable} ${spaceGrotesk.variable} ${spaceMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <SolanaProvider>
-            <ConvexClientProvider>
+          <ConvexClientProvider>
               <SessionProvider>
                 <AutoLogout />
                 {children}
               </SessionProvider>
-            </ConvexClientProvider>
-          </SolanaProvider>
+          </ConvexClientProvider>
         </ThemeProvider>
       </body>
     </html>

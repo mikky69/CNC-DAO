@@ -8,7 +8,6 @@ import ParticleSphere from "@/components/ParticleSphere"
 import DotGlobe from "@/components/DotGlobe"
 import { Reveal } from "@/components/Reveal"
 import { FlipCard } from "@/components/FlipCard"
-import { PersonaCard } from "@/components/PersonaCard"
 import { LiveStats } from "@/components/LiveStats"
 
 const steps = [
@@ -174,12 +173,6 @@ export default function Home() {
         </Reveal>
       </section>
 
-      {/* ---------- Persona card ---------- */}
-      <section className="px-6 pb-4 md:px-16">
-        <Reveal>
-          <PersonaCard />
-        </Reveal>
-      </section>
 
       {/* ---------- Supported by Solana: tree + particle sphere + ticker ---------- */}
       <section className="px-6 pb-20 md:px-16">

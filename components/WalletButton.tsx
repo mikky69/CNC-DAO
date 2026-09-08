@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { signOut, useSession } from "next-auth/react"
@@ -22,6 +22,9 @@ function formatUserLabel(raw: string | undefined | null): string {
   return clean
 }
 
+// PROTECTED routes — never redirect away from these
+const PROTECTED = ["/dashboard", "/profile", "/tree-reg", "/campaigns", "/map"]
+
 export function WalletButton({ className = "" }: { className?: string }) {
   const { publicKey, connected, disconnect } = useWallet()
   const { setVisible } = useWalletModal()
@@ -30,40 +33,34 @@ export function WalletButton({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
+  const pathname = usePathname()
+  const redirectedForAddress = useRef<string | null>(null)
   const connectWalletMutation = useMutation(api.users.connectWallet)
-
-  // Use sessionStorage instead of a ref so the guard persists across
-  // header remounts (which happen on every page navigation).
-  const SESSION_KEY = "cncdao_wallet_redirected"
 
   useEffect(() => {
     if (!connected || !publicKey) return
-    if (typeof window === "undefined") return
-    // Already redirected this session — don't do it again
-    if (sessionStorage.getItem(SESSION_KEY)) return
-    // Already on dashboard or a protected page — don't redirect
-    const path = window.location.pathname
-    if (path.startsWith("/dashboard") || path.startsWith("/profile")) return
-    sessionStorage.setItem(SESSION_KEY, "1")
     const address = publicKey.toBase58()
+    // Already redirected for this specific wallet address this mount cycle
+    if (redirectedForAddress.current === address) return
+    // Already on a protected page — just update address, don't redirect
+    if (PROTECTED.some((p) => pathname?.startsWith(p))) return
+    redirectedForAddress.current = address
     connectWalletMutation({ walletAddress: address }).catch(console.error)
     router.push("/dashboard")
-  }, [connected, publicKey]) // eslint-disable-line
+  }, [connected, publicKey, pathname]) // eslint-disable-line
 
-  // Clear the session flag when wallet disconnects so reconnecting works
+  // Reset when wallet disconnects
   useEffect(() => {
-    if (!connected && typeof window !== "undefined") {
-      sessionStorage.removeItem(SESSION_KEY)
-    }
+    if (!connected) redirectedForAddress.current = null
   }, [connected])
 
-  // Close dropdown on outside click
+  // Close on outside click
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
+    function h(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
-    document.addEventListener("mousedown", handleClick)
-    return () => document.removeEventListener("mousedown", handleClick)
+    document.addEventListener("mousedown", h)
+    return () => document.removeEventListener("mousedown", h)
   }, [])
 
   const walletLabel = connected && publicKey ? shortAddress(publicKey.toBase58()) : null
@@ -110,34 +107,14 @@ export function WalletButton({ className = "" }: { className?: string }) {
               <div className="font-mono text-[10px] text-white/80 truncate">{publicKey?.toBase58()}</div>
             </div>
           )}
-          <button
-            onClick={() => { setOpen(false); router.push("/dashboard") }}
-            className="block w-full px-4 py-3 text-left text-sm text-white/80 hover:bg-white/5 hover:text-white"
-          >
-            Dashboard
-          </button>
-          <button
-            onClick={() => { setOpen(false); router.push("/dashboard") }}
-            className="block w-full px-4 py-3 text-left text-sm text-white/80 hover:bg-white/5 hover:text-white"
-          >
-            Edit profile
-          </button>
+          <button onClick={() => { setOpen(false); router.push("/dashboard") }} className="block w-full px-4 py-3 text-left text-sm text-white/80 hover:bg-white/5 hover:text-white">Dashboard</button>
+          <button onClick={() => { setOpen(false); router.push("/dashboard") }} className="block w-full px-4 py-3 text-left text-sm text-white/80 hover:bg-white/5 hover:text-white">Edit profile</button>
           <div className="border-t border-white/10">
             {connected && (
-              <button
-                onClick={() => { disconnect(); setOpen(false) }}
-                className="block w-full px-4 py-3 text-left text-sm text-red-400/80 hover:bg-white/5 hover:text-red-400"
-              >
-                Disconnect wallet
-              </button>
+              <button onClick={() => { disconnect(); setOpen(false) }} className="block w-full px-4 py-3 text-left text-sm text-red-400/80 hover:bg-white/5 hover:text-red-400">Disconnect wallet</button>
             )}
             {sessionUser && (
-              <button
-                onClick={() => { signOut({ callbackUrl: "/" }); setOpen(false) }}
-                className="block w-full px-4 py-3 text-left text-sm text-red-400/80 hover:bg-white/5 hover:text-red-400"
-              >
-                Sign out
-              </button>
+              <button onClick={() => { signOut({ callbackUrl: "/" }); setOpen(false) }} className="block w-full px-4 py-3 text-left text-sm text-red-400/80 hover:bg-white/5 hover:text-red-400">Sign out</button>
             )}
           </div>
         </div>

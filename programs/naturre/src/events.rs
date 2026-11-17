@@ -81,3 +81,21 @@ pub struct TreeNftMinted {
     pub tree_id_bytes: [u8; 32],
     pub timestamp: i64,
 }
+
+#[event]
+pub struct MilestoneCollectionInitialized {
+    pub admin: Pubkey,
+    pub collection: Pubkey,
+    pub name: String,
+    pub uri: String,
+    pub timestamp: i64,
+}
+
+#[event]
+pub struct MilestoneBadgeClaimed {
+    pub user: Pubkey,
+    pub badge_asset: Pubkey,
+    pub tier: u8,
+    pub trees_verified: u32,
+    pub timestamp: i64,
+}

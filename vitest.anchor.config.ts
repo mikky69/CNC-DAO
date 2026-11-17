@@ -5,8 +5,8 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
-    testTimeout: 60000,
-    hookTimeout: 60000,
+    testTimeout: 180000,
+    hookTimeout: 180000,
     include: ["tests/anchor/**/*.test.ts"],
     alias: {
       "@": path.resolve(__dirname, "./"),

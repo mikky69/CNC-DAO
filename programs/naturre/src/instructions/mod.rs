@@ -6,6 +6,8 @@ pub mod submit_tree;
 pub mod review_tree;
 pub mod initialize_tree_collection;
 pub mod mint_tree_nft;
+pub mod initialize_milestone_collection;
+pub mod claim_milestone_badge;
 
 pub use initialize_protocol::*;
 pub use update_pause::*;
@@ -15,3 +17,5 @@ pub use submit_tree::*;
 pub use review_tree::*;
 pub use initialize_tree_collection::*;
 pub use mint_tree_nft::*;
+pub use initialize_milestone_collection::*;
+pub use claim_milestone_badge::*;

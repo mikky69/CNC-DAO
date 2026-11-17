@@ -381,12 +381,14 @@ pub struct UserStats {
    - Signer must be the original `planter`.
    - Mints one transferable Metaplex Core asset in `tree_collection`.
    - Sets status to `TreeStatus::Minted`.
-8. **`claim_milestone_badge(milestone_tier: u8)` (PRD Badges):**
+8. **`initialize_milestone_collection(name, uri)`:** Admin initializes the official Metaplex Core Milestone Badge Collection; sets its update authority to `protocol_config` PDA so that eligible users can permissionlessly mint milestone badges via CPI `invoke_signed`.
+9. **`claim_milestone_badge(milestone_tier: u8)` (PRD Badges):**
    - Tier 0: **First Root** (Requires 1 verified tree)
    - Tier 1: **Grove Builder** (Requires 10 verified trees)
    - Tier 2: **Forest Guardian** (Requires 50 verified trees)
-   - Verifies verified tree count, checks bitmask, mints transferable collectible via Metaplex Core CPI.
-9. **`toggle_pause()`:** Admin toggles emergency pause circuit breaker.
+   - Verifies verified tree count, checks bitmask, mints transferable collectible via Metaplex Core CPI into `badge_collection`.
+   - Sets corresponding bit in `user_stats.claimed_milestones` only upon successful mint.
+10. **`toggle_pause()`:** Admin toggles emergency pause circuit breaker.
 
 ---
 

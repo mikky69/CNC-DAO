@@ -4,7 +4,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Keypair, PublicKey, SystemProgram, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { mplCore, fetchAsset, transferV1 } from "@metaplex-foundation/mpl-core";
+import { mplCore, fetchAsset, fetchCollection, transferV1 } from "@metaplex-foundation/mpl-core";
 import { createSignerFromKeypair, signerIdentity, publicKey as toUmiPublicKey } from "@metaplex-foundation/umi";
 import { fromWeb3JsKeypair } from "@metaplex-foundation/umi-web3js-adapters";
 import { Naturre } from "../../target/types/naturre";
@@ -30,6 +30,10 @@ describe("Naturre Smart Contract Protocol Tests", () => {
   // Shared state across suites
   const treeCollectionKeypair = Keypair.generate();
   const treeNftKeypair = Keypair.generate();
+  const milestoneCollectionKeypair = Keypair.generate();
+  const firstRootBadgeKeypair = Keypair.generate();
+  const groveBuilderBadgeKeypair = Keypair.generate();
+  const forestGuardianBadgeKeypair = Keypair.generate();
 
   // PDA derivation helpers
   const getConfigPda = () => {
@@ -95,7 +99,7 @@ describe("Naturre Smart Contract Protocol Tests", () => {
     for (const signer of airdropSigners) {
       const tx = await provider.connection.requestAirdrop(
         signer.publicKey,
-        5 * LAMPORTS_PER_SOL
+        signer === planter ? 10 * LAMPORTS_PER_SOL : 5 * LAMPORTS_PER_SOL
       );
       const latestBlockhash = await provider.connection.getLatestBlockhash();
       await provider.connection.confirmTransaction({
@@ -698,8 +702,8 @@ describe("Naturre Smart Contract Protocol Tests", () => {
       // Check UserStats verification count and milestone flag
       const stats = await program.account.userStats.fetch(userStatsPda);
       expect(stats.treesVerified).toBe(1);
-      // Bit 0 = First Root milestone flag (0x01)
-      expect(stats.claimedMilestones & 1).toBe(1);
+      // Bit 0 = First Root milestone flag (0x01) - unclaimed until claim_milestone_badge is called
+      expect(stats.claimedMilestones & 1).toBe(0);
     });
 
     it("rejects further votes once a tree is already Verified", async () => {
@@ -1286,5 +1290,534 @@ describe("Naturre Smart Contract Protocol Tests", () => {
       const accountInfo = await provider.connection.getAccountInfo(badgeAssetKeypair.publicKey, "confirmed");
       expect(accountInfo === null || accountInfo.data[0] === 0).toBe(true);
     });
+  });
+
+  describe("11. Naturre Milestone Badge Collection & Claiming Lifecycle", () => {
+    const submitAndVerifyTree = async (planterKeypair: Keypair, treeName: string) => {
+      const treeId = createTreeId(treeName);
+      const treePda = getTreePda(planterKeypair.publicKey, treeId);
+      const statsPda = getUserStatsPda(planterKeypair.publicKey);
+      const configPda = getConfigPda();
+      const val1Pda = getValidatorPda(validator1.publicKey);
+      const val2Pda = getValidatorPda(validator2.publicKey);
+      const vote1Pda = getVotePda(treePda, validator1.publicKey);
+      const vote2Pda = getVotePda(treePda, validator2.publicKey);
+
+      await program.methods
+        .submitTree(
+          treeId,
+          new anchor.BN(45 * 10_000_000),
+          new anchor.BN(10 * 10_000_000),
+          0,
+          "QmTestMilestoneCid"
+        )
+        .accountsPartial({
+          planter: planterKeypair.publicKey,
+          protocolConfig: configPda,
+          treeRecord: treePda,
+          userStats: statsPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([planterKeypair])
+        .rpc();
+
+      await program.methods
+        .reviewTree(true)
+        .accountsPartial({
+          validator: validator1.publicKey,
+          protocolConfig: configPda,
+          validatorProfile: val1Pda,
+          planter: planterKeypair.publicKey,
+          treeRecord: treePda,
+          voteRecord: vote1Pda,
+          userStats: statsPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([validator1])
+        .rpc();
+
+      await program.methods
+        .reviewTree(true)
+        .accountsPartial({
+          validator: validator2.publicKey,
+          protocolConfig: configPda,
+          validatorProfile: val2Pda,
+          planter: planterKeypair.publicKey,
+          treeRecord: treePda,
+          voteRecord: vote2Pda,
+          userStats: statsPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([validator2])
+        .rpc();
+    };
+
+    it("rejects unauthorized user trying to initialize milestone collection", async () => {
+      const configPda = getConfigPda();
+      const fakeCollection = Keypair.generate();
+
+      try {
+        await program.methods
+          .initializeMilestoneCollection(
+            "Naturre Milestone Badges",
+            "https://devnet.naturre.org/metadata/milestones/collection.json"
+          )
+          .accountsPartial({
+            admin: unauthorizedUser.publicKey,
+            protocolConfig: configPda,
+            collection: fakeCollection.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([unauthorizedUser, fakeCollection])
+          .rpc();
+        expect.unreachable("Unauthorized user must not be able to initialize milestone collection");
+      } catch (err: any) {
+        expect(err.message).toContain("UnauthorizedAdmin");
+      }
+    });
+
+    it("allows admin to initialize the official Naturre Milestone Badge Collection", async () => {
+      const configPda = getConfigPda();
+
+      await program.methods
+        .initializeMilestoneCollection(
+          "Naturre Milestone Badges",
+          "https://devnet.naturre.org/metadata/milestones/collection.json"
+        )
+        .accountsPartial({
+          admin: admin.publicKey,
+          protocolConfig: configPda,
+          collection: milestoneCollectionKeypair.publicKey,
+          mplCoreProgram: MPL_CORE_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([admin, milestoneCollectionKeypair])
+        .rpc();
+
+      const config = await program.account.protocolConfig.fetch(configPda);
+      expect(config.badgeCollection).not.toBeNull();
+      expect(config.badgeCollection!.toBase58()).toBe(milestoneCollectionKeypair.publicKey.toBase58());
+
+      // Verify on Metaplex Core via Umi
+      const umi = createUmi(provider.connection).use(mplCore());
+      const collectionAsset = await fetchCollection(umi, toUmiPublicKey(milestoneCollectionKeypair.publicKey.toBase58()));
+      expect(collectionAsset.name).toBe("Naturre Milestone Badges");
+      expect(collectionAsset.updateAuthority).toBe(configPda.toBase58());
+    });
+
+    it("prevents re-initialization of the Milestone Badge Collection", async () => {
+      const configPda = getConfigPda();
+      const duplicateKeypair = Keypair.generate();
+
+      try {
+        await program.methods
+          .initializeMilestoneCollection(
+            "Duplicate Milestone Collection",
+            "https://devnet.naturre.org/metadata/milestones/dup.json"
+          )
+          .accountsPartial({
+            admin: admin.publicKey,
+            protocolConfig: configPda,
+            collection: duplicateKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([admin, duplicateKeypair])
+          .rpc();
+        expect.unreachable("Re-initializing milestone collection must fail");
+      } catch (err: any) {
+        expect(err.message).toContain("MilestoneCollectionAlreadyInitialized");
+      }
+    });
+
+    it("rejects claim for milestone tier 0 (First Root) if user has 0 verified trees", async () => {
+      const configPda = getConfigPda();
+      const zeroTreesUser = Keypair.generate();
+      const airdropTx = await provider.connection.requestAirdrop(zeroTreesUser.publicKey, 2 * LAMPORTS_PER_SOL);
+      const bh = await provider.connection.getLatestBlockhash();
+      await provider.connection.confirmTransaction({ signature: airdropTx, ...bh });
+
+      // Submit an unverified tree so UserStats exists
+      const treeId = createTreeId("zero_tree_001");
+      const treePda = getTreePda(zeroTreesUser.publicKey, treeId);
+      const userStatsPda = getUserStatsPda(zeroTreesUser.publicKey);
+
+      await program.methods
+        .submitTree(
+          treeId,
+          new anchor.BN(45 * 10_000_000),
+          new anchor.BN(10 * 10_000_000),
+          0,
+          "QmZeroTreesCid"
+        )
+        .accountsPartial({
+          planter: zeroTreesUser.publicKey,
+          protocolConfig: configPda,
+          treeRecord: treePda,
+          userStats: userStatsPda,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([zeroTreesUser])
+        .rpc();
+
+      const badgeAsset = Keypair.generate();
+      try {
+        await program.methods
+          .claimMilestoneBadge(0, null, null)
+          .accountsPartial({
+            user: zeroTreesUser.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: badgeAsset.publicKey,
+            milestoneCollection: milestoneCollectionKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([zeroTreesUser, badgeAsset])
+          .rpc();
+        expect.unreachable("User with 0 verified trees cannot claim First Root");
+      } catch (err: any) {
+        expect(err.message).toContain("MilestoneNotReached");
+      }
+    });
+
+    it("rejects claim for milestone tier 1 (Grove Builder) if user has fewer than 10 verified trees", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const stats = await program.account.userStats.fetch(userStatsPda);
+      expect(stats.treesVerified).toBe(2);
+      expect(stats.treesVerified).toBeLessThan(10);
+
+      const badgeAsset = Keypair.generate();
+      try {
+        await program.methods
+          .claimMilestoneBadge(1, null, null)
+          .accountsPartial({
+            user: planter.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: badgeAsset.publicKey,
+            milestoneCollection: milestoneCollectionKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([planter, badgeAsset])
+          .rpc();
+        expect.unreachable("User with 1 verified tree cannot claim Grove Builder");
+      } catch (err: any) {
+        expect(err.message).toContain("MilestoneNotReached");
+      }
+    });
+
+    it("rejects claim for milestone tier 2 (Forest Guardian) if user has fewer than 50 verified trees", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+
+      const badgeAsset = Keypair.generate();
+      try {
+        await program.methods
+          .claimMilestoneBadge(2, null, null)
+          .accountsPartial({
+            user: planter.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: badgeAsset.publicKey,
+            milestoneCollection: milestoneCollectionKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([planter, badgeAsset])
+          .rpc();
+        expect.unreachable("User with 1 verified tree cannot claim Forest Guardian");
+      } catch (err: any) {
+        expect(err.message).toContain("MilestoneNotReached");
+      }
+    });
+
+    it("rejects claim with invalid milestone tier (e.g. tier 3)", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const badgeAsset = Keypair.generate();
+
+      try {
+        await program.methods
+          .claimMilestoneBadge(3, null, null)
+          .accountsPartial({
+            user: planter.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: badgeAsset.publicKey,
+            milestoneCollection: milestoneCollectionKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([planter, badgeAsset])
+          .rpc();
+        expect.unreachable("Invalid milestone tier must be rejected");
+      } catch (err: any) {
+        expect(err.message).toContain("InvalidMilestoneTier");
+      }
+    });
+
+    it("rejects claim with an invalid or spoofed milestone collection account", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const badgeAsset = Keypair.generate();
+
+      try {
+        await program.methods
+          .claimMilestoneBadge(0, null, null)
+          .accountsPartial({
+            user: planter.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: badgeAsset.publicKey,
+            milestoneCollection: treeCollectionKeypair.publicKey, // wrong collection!
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([planter, badgeAsset])
+          .rpc();
+        expect.unreachable("Claiming with spoofed collection must fail");
+      } catch (err: any) {
+        expect(err.message).toContain("InvalidCollection");
+      }
+    });
+
+    it("successfully claims First Root milestone badge (tier 0) for verified planter", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+
+      await program.methods
+        .claimMilestoneBadge(0, null, null)
+        .accountsPartial({
+          user: planter.publicKey,
+          protocolConfig: configPda,
+          userStats: userStatsPda,
+          badgeAsset: firstRootBadgeKeypair.publicKey,
+          milestoneCollection: milestoneCollectionKeypair.publicKey,
+          mplCoreProgram: MPL_CORE_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([planter, firstRootBadgeKeypair])
+        .rpc();
+
+      // Check UserStats claimed_milestones bitmask: Bit 0 (0x01) must be set
+      const stats = await program.account.userStats.fetch(userStatsPda);
+      expect(stats.claimedMilestones & 1).toBe(1);
+
+      // Verify asset on Metaplex Core via Umi
+      const umi = createUmi(provider.connection).use(mplCore());
+      const asset = await fetchAsset(umi, toUmiPublicKey(firstRootBadgeKeypair.publicKey.toBase58()), {
+        skipDerivePlugins: true,
+      });
+      expect(asset.owner).toBe(planter.publicKey.toBase58());
+      expect(asset.name).toBe("First Root Milestone");
+    });
+
+    it("prevents duplicate claim of First Root milestone (tier 0)", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const duplicateAsset = Keypair.generate();
+
+      try {
+        await program.methods
+          .claimMilestoneBadge(0, null, null)
+          .accountsPartial({
+            user: planter.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: duplicateAsset.publicKey,
+            milestoneCollection: milestoneCollectionKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([planter, duplicateAsset])
+          .rpc();
+        expect.unreachable("Duplicate milestone claim must fail");
+      } catch (err: any) {
+        expect(err.message).toContain("MilestoneAlreadyClaimed");
+      }
+    });
+
+    it("allows planter to freely transfer the First Root milestone badge to another wallet", async () => {
+      const umi = createUmi(provider.connection).use(mplCore());
+      const planterSigner = createSignerFromKeypair(umi, fromWeb3JsKeypair(planter));
+      umi.use(signerIdentity(planterSigner));
+
+      await transferV1(umi, {
+        asset: toUmiPublicKey(firstRootBadgeKeypair.publicKey.toBase58()),
+        newOwner: toUmiPublicKey(recipient.publicKey.toBase58()),
+        collection: toUmiPublicKey(milestoneCollectionKeypair.publicKey.toBase58()),
+      }).sendAndConfirm(umi);
+
+      const transferredAsset = await fetchAsset(umi, toUmiPublicKey(firstRootBadgeKeypair.publicKey.toBase58()), {
+        skipDerivePlugins: true,
+      });
+      expect(transferredAsset.owner).toBe(recipient.publicKey.toBase58());
+    });
+
+    it("qualifies for Grove Builder (10 trees) and claims tier 1 milestone badge", async () => {
+      // Planter currently has 2 verified trees (tree_001, tree_split_003). Submit and verify 8 more trees (tree_003 to tree_010)
+      for (let i = 3; i <= 10; i++) {
+        await submitAndVerifyTree(planter, `tree_${String(i).padStart(3, "0")}`);
+      }
+
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const statsBefore = await program.account.userStats.fetch(userStatsPda);
+      expect(statsBefore.treesVerified).toBe(10);
+      expect((statsBefore.claimedMilestones & 2) === 0).toBe(true); // Tier 1 not yet claimed
+
+      await program.methods
+        .claimMilestoneBadge(1, null, null)
+        .accountsPartial({
+          user: planter.publicKey,
+          protocolConfig: configPda,
+          userStats: userStatsPda,
+          badgeAsset: groveBuilderBadgeKeypair.publicKey,
+          milestoneCollection: milestoneCollectionKeypair.publicKey,
+          mplCoreProgram: MPL_CORE_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([planter, groveBuilderBadgeKeypair])
+        .rpc();
+
+      // Check UserStats claimed_milestones bitmask: Bit 0 and Bit 1 must be set (0b00000011 = 3)
+      const statsAfter = await program.account.userStats.fetch(userStatsPda);
+      expect(statsAfter.claimedMilestones & 2).toBe(2);
+      expect(statsAfter.claimedMilestones).toBe(3);
+
+      // Verify asset on Metaplex Core via Umi
+      const umi = createUmi(provider.connection).use(mplCore());
+      const asset = await fetchAsset(umi, toUmiPublicKey(groveBuilderBadgeKeypair.publicKey.toBase58()), {
+        skipDerivePlugins: true,
+      });
+      expect(asset.owner).toBe(planter.publicKey.toBase58());
+      expect(asset.name).toBe("Grove Builder Milestone");
+    });
+
+    it("prevents duplicate claim of Grove Builder milestone (tier 1)", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const duplicateAsset = Keypair.generate();
+
+      try {
+        await program.methods
+          .claimMilestoneBadge(1, null, null)
+          .accountsPartial({
+            user: planter.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: duplicateAsset.publicKey,
+            milestoneCollection: milestoneCollectionKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([planter, duplicateAsset])
+          .rpc();
+        expect.unreachable("Duplicate Grove Builder claim must fail");
+      } catch (err: any) {
+        expect(err.message).toContain("MilestoneAlreadyClaimed");
+      }
+    });
+
+    it(
+      "qualifies for Forest Guardian (50 trees) and claims tier 2 milestone badge",
+      async () => {
+      // Planter currently has 10 verified trees. Submit and verify 40 more trees (tree_011 to tree_050)
+      for (let i = 11; i <= 50; i++) {
+        await submitAndVerifyTree(planter, `tree_${String(i).padStart(3, "0")}`);
+      }
+
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const statsBefore = await program.account.userStats.fetch(userStatsPda);
+      expect(statsBefore.treesVerified).toBe(50);
+      expect((statsBefore.claimedMilestones & 4) === 0).toBe(true); // Tier 2 not yet claimed
+
+      await program.methods
+        .claimMilestoneBadge(2, null, null)
+        .accountsPartial({
+          user: planter.publicKey,
+          protocolConfig: configPda,
+          userStats: userStatsPda,
+          badgeAsset: forestGuardianBadgeKeypair.publicKey,
+          milestoneCollection: milestoneCollectionKeypair.publicKey,
+          mplCoreProgram: MPL_CORE_PROGRAM_ID,
+          systemProgram: SystemProgram.programId,
+        })
+        .signers([planter, forestGuardianBadgeKeypair])
+        .rpc();
+
+      // Check UserStats claimed_milestones bitmask: Bits 0, 1, 2 must be set (0b00000111 = 7)
+      const statsAfter = await program.account.userStats.fetch(userStatsPda);
+      expect(statsAfter.claimedMilestones & 4).toBe(4);
+      expect(statsAfter.claimedMilestones).toBe(7);
+
+      // Verify asset on Metaplex Core via Umi
+      const umi = createUmi(provider.connection).use(mplCore());
+      const asset = await fetchAsset(umi, toUmiPublicKey(forestGuardianBadgeKeypair.publicKey.toBase58()), {
+        skipDerivePlugins: true,
+      });
+      expect(asset.owner).toBe(planter.publicKey.toBase58());
+      expect(asset.name).toBe("Forest Guardian Milestone");
+    }, 180000);
+
+    it("prevents duplicate claim of Forest Guardian milestone (tier 2)", async () => {
+      const configPda = getConfigPda();
+      const userStatsPda = getUserStatsPda(planter.publicKey);
+      const duplicateAsset = Keypair.generate();
+
+      try {
+        await program.methods
+          .claimMilestoneBadge(2, null, null)
+          .accountsPartial({
+            user: planter.publicKey,
+            protocolConfig: configPda,
+            userStats: userStatsPda,
+            badgeAsset: duplicateAsset.publicKey,
+            milestoneCollection: milestoneCollectionKeypair.publicKey,
+            mplCoreProgram: MPL_CORE_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          })
+          .signers([planter, duplicateAsset])
+          .rpc();
+        expect.unreachable("Duplicate Forest Guardian claim must fail");
+      } catch (err: any) {
+        expect(err.message).toContain("MilestoneAlreadyClaimed");
+      }
+    });
+
+    it("verifies that all three milestone badges were claimed independently and can be transferred", async () => {
+      const umi = createUmi(provider.connection).use(mplCore());
+      const planterSigner = createSignerFromKeypair(umi, fromWeb3JsKeypair(planter));
+      umi.use(signerIdentity(planterSigner));
+
+      // Transfer Grove Builder badge
+      await transferV1(umi, {
+        asset: toUmiPublicKey(groveBuilderBadgeKeypair.publicKey.toBase58()),
+        newOwner: toUmiPublicKey(recipient.publicKey.toBase58()),
+        collection: toUmiPublicKey(milestoneCollectionKeypair.publicKey.toBase58()),
+      }).sendAndConfirm(umi);
+
+      // Transfer Forest Guardian badge
+      await transferV1(umi, {
+        asset: toUmiPublicKey(forestGuardianBadgeKeypair.publicKey.toBase58()),
+        newOwner: toUmiPublicKey(recipient.publicKey.toBase58()),
+        collection: toUmiPublicKey(milestoneCollectionKeypair.publicKey.toBase58()),
+      }).sendAndConfirm(umi);
+
+      const transferredGrove = await fetchAsset(umi, toUmiPublicKey(groveBuilderBadgeKeypair.publicKey.toBase58()), {
+        skipDerivePlugins: true,
+      });
+      expect(transferredGrove.owner).toBe(recipient.publicKey.toBase58());
+
+      const transferredGuardian = await fetchAsset(umi, toUmiPublicKey(forestGuardianBadgeKeypair.publicKey.toBase58()), {
+        skipDerivePlugins: true,
+      });
+      expect(transferredGuardian.owner).toBe(recipient.publicKey.toBase58());
+    }, 60000);
   });
 });

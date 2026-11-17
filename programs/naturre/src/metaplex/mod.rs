@@ -104,3 +104,51 @@ pub fn mint_tree_nft_cpi<'a>(
 
     Ok(())
 }
+
+pub fn create_milestone_collection_cpi<'a>(
+    mpl_core_program: &AccountInfo<'a>,
+    collection: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    update_authority: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+    name: String,
+    uri: String,
+) -> Result<()> {
+    CreateCollectionV1CpiBuilder::new(mpl_core_program)
+        .collection(collection)
+        .payer(payer)
+        .update_authority(Some(update_authority))
+        .system_program(system_program)
+        .name(name)
+        .uri(uri)
+        .invoke()?;
+
+    Ok(())
+}
+
+pub fn mint_milestone_badge_cpi<'a>(
+    mpl_core_program: &AccountInfo<'a>,
+    asset: &AccountInfo<'a>,
+    collection: &AccountInfo<'a>,
+    collection_authority: &AccountInfo<'a>,
+    payer: &AccountInfo<'a>,
+    owner: &AccountInfo<'a>,
+    system_program: &AccountInfo<'a>,
+    name: String,
+    uri: String,
+    signer_seeds: &[&[&[u8]]],
+) -> Result<()> {
+    CreateV1CpiBuilder::new(mpl_core_program)
+        .asset(asset)
+        .collection(Some(collection))
+        .authority(Some(collection_authority))
+        .payer(payer)
+        .owner(Some(owner))
+        .system_program(system_program)
+        .data_state(DataState::AccountState)
+        .name(name)
+        .uri(uri)
+        .invoke_signed(signer_seeds)?;
+
+    Ok(())
+}

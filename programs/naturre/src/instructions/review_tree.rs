@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::constants::{
-    CONFIG_SEED, MILESTONE_FIRST_ROOT, MILESTONE_FLAG_FIRST_ROOT, MILESTONE_FLAG_FOREST_GUARDIAN,
-    MILESTONE_FLAG_GROVE_BUILDER, MILESTONE_FOREST_GUARDIAN, MILESTONE_GROVE_BUILDER, TREE_SEED,
-    USER_STATS_SEED, VALIDATOR_SEED, VOTE_SEED,
+    CONFIG_SEED, MILESTONE_FIRST_ROOT, MILESTONE_FOREST_GUARDIAN, MILESTONE_GROVE_BUILDER,
+    TREE_SEED, USER_STATS_SEED, VALIDATOR_SEED, VOTE_SEED,
 };
 use crate::errors::NaturreError;
 use crate::events::{MilestoneReached, TreeReviewed};
@@ -109,35 +108,23 @@ pub fn handle_review_tree(ctx: Context<ReviewTree>, approve: bool) -> Result<()>
         // Update planter verified tree count
         stats.trees_verified = stats.trees_verified.saturating_add(1);
 
-        // Check milestones: First Root (1), Grove Builder (10), Forest Guardian (50)
-        if stats.trees_verified >= MILESTONE_FIRST_ROOT
-            && (stats.claimed_milestones & MILESTONE_FLAG_FIRST_ROOT) == 0
-        {
-            stats.claimed_milestones |= MILESTONE_FLAG_FIRST_ROOT;
+        // Emit MilestoneReached event when thresholds are hit (First Root = 1, Grove Builder = 10, Forest Guardian = 50)
+        // Note: claimed_milestones bitmap is updated when the user calls claim_milestone_badge.
+        if stats.trees_verified == MILESTONE_FIRST_ROOT {
             emit!(MilestoneReached {
                 user: tree.planter,
                 tier: 0,
                 total_verified_trees: stats.trees_verified,
                 timestamp: clock.unix_timestamp,
             });
-        }
-
-        if stats.trees_verified >= MILESTONE_GROVE_BUILDER
-            && (stats.claimed_milestones & MILESTONE_FLAG_GROVE_BUILDER) == 0
-        {
-            stats.claimed_milestones |= MILESTONE_FLAG_GROVE_BUILDER;
+        } else if stats.trees_verified == MILESTONE_GROVE_BUILDER {
             emit!(MilestoneReached {
                 user: tree.planter,
                 tier: 1,
                 total_verified_trees: stats.trees_verified,
                 timestamp: clock.unix_timestamp,
             });
-        }
-
-        if stats.trees_verified >= MILESTONE_FOREST_GUARDIAN
-            && (stats.claimed_milestones & MILESTONE_FLAG_FOREST_GUARDIAN) == 0
-        {
-            stats.claimed_milestones |= MILESTONE_FLAG_FOREST_GUARDIAN;
+        } else if stats.trees_verified == MILESTONE_FOREST_GUARDIAN {
             emit!(MilestoneReached {
                 user: tree.planter,
                 tier: 2,

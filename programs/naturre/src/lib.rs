@@ -90,4 +90,23 @@ pub mod naturre {
     ) -> Result<()> {
         instructions::handle_mint_tree_nft(ctx, name, uri)
     }
+
+    /// Admin initializes the official Naturre Milestone Badge Collection on Metaplex Core
+    pub fn initialize_milestone_collection(
+        ctx: Context<InitializeMilestoneCollection>,
+        name: String,
+        uri: String,
+    ) -> Result<()> {
+        instructions::handle_initialize_milestone_collection(ctx, name, uri)
+    }
+
+    /// User claims an earned transferable Metaplex Core milestone badge (First Root, Grove Builder, Forest Guardian)
+    pub fn claim_milestone_badge(
+        ctx: Context<ClaimMilestoneBadge>,
+        tier: u8,
+        name: Option<String>,
+        uri: Option<String>,
+    ) -> Result<()> {
+        instructions::handle_claim_milestone_badge(ctx, tier, name, uri)
+    }
 }

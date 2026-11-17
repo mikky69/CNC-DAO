@@ -55,4 +55,13 @@ pub enum NaturreError {
 
     #[msg("Invalid collection account. Account does not match protocol tree collection.")]
     InvalidCollection,
+
+    #[msg("Milestone collection has already been initialized.")]
+    MilestoneCollectionAlreadyInitialized,
+
+    #[msg("Milestone collection has not been initialized yet.")]
+    MilestoneCollectionNotInitialized,
+
+    #[msg("Invalid milestone tier. Must be 0 (First Root), 1 (Grove Builder), or 2 (Forest Guardian).")]
+    InvalidMilestoneTier,
 }

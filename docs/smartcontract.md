@@ -445,26 +445,93 @@ pub struct UserStats {
 
 ### 8.1 Schema Extensions (`convex/schema.ts`)
 Convex maintains cached mirrors of on-chain state:
-- `treeIdBytesHex`: string
-- `onChainPda`: string
-- `submissionTx`: string
-- `nftAssetAddress`: string
-- `mintTx`: string
-- `approvalsCount`: number
-- `verifiedAt`: string
+- **`trees` table:**
+  - `onChainPda`: string (indexed by `by_onChainPda`)
+  - `treeIdBytesHex`: string (indexed by `by_treeIdBytesHex`)
+  - `onChainStatus`: "pending" | "verified" | "rejected" | "minted"
+  - `submissionTx`: string
+  - `submissionSlot`: number
+  - `approvalsCount`: number
+  - `rejectionsCount`: number
+  - `verifiedAt`: string
+  - `nftAssetAddress`: string
+  - `mintTx`: string
+  - `mintSlot`: number
+  - `lastSyncedSlot`: number
+  - `lastSyncedAt`: string
+- **`users` table:**
+  - `validatorPda`: string
+  - `isValidatorActive`: boolean
+  - `validatorApprovedAt`: string
+  - `badgeAsset`: string
+- **`validations` table:**
+  - `txSignature`: string (indexed by `by_txSignature`)
+  - `slot`: number
+  - `onChainPda`: string
+- **`milestoneClaims` table:**
+  - `walletAddress`: string (indexed by `by_walletAddress`)
+  - `tier`: number
+  - `badgeName`: string
+  - `badgeAsset`: string (indexed by `by_badgeAsset`)
+  - `treesVerified`: number
+  - `txSignature`: string
+  - `slot`: number
+  - `claimedAt`: string
+- **`protocolConfigs` table:**
+  - `adminAuthority`: string (indexed by `by_adminAuthority`)
+  - `feeTreasury`: string
+  - `requiredApprovals`: number
+  - `isPaused`: boolean
+  - `treeCollection`: string
+  - `badgeCollection`: string
+  - `protocolFeeLamports`: string
+  - `lastSyncedSlot`: number
+  - `updatedAt`: string
+- **`indexerState` table:**
+  - `key`: string (singleton indexer checkpoint key)
+  - `lastSlot`: number
+  - `lastSignature`: string
+  - `processedEventsCount`: number
+  - `updatedAt`: string
+- **`indexerErrors` table:**
+  - `signature`: string
+  - `slot`: number
+  - `eventName`: string
+  - `errorMessage`: string
+  - `rawEvent`: string
+  - `resolved`: boolean
+  - `timestamp`: string
 
-### 8.2 Role Alignment
-Harmonizes `convex/validators.ts` to check `"nature_hero"`, matching `convex/schema.ts`.
+### 8.2 Role Alignment & Idempotent Synchronization (`convex/sync.ts`)
+Provides dedicated, idempotent sync mutations and queries:
+- `syncProtocolInitialized`, `syncProtocolPauseToggled`
+- `syncTreeCollectionInitialized`, `syncMilestoneCollectionInitialized`
+- `syncValidatorApproved`, `syncValidatorRevoked`
+- `syncTreeSubmitted`, `syncTreeReviewed`, `syncTreeNftMinted`
+- `syncMilestoneBadgeClaimed`
+- `recordIndexerCheckpoint`, `recordIndexerError`
+- Verification queries: `getTreeByPda`, `getMilestoneClaimsByWallet`, `getIndexerState`, `getProtocolConfig`, `getAllTreesForReconciliation`, `getAllValidatorsForReconciliation`
 
 ---
 
-## 9. Blockchain Event Indexer Specification
+## 9. Blockchain Event Indexer & Reconciliation Specification
 
-Autonomous Node.js worker in `server/indexer/`:
-- Listens to Solana RPC WebSocket (`connection.onLogs`).
-- Decodes Anchor events (`TreeRecordSubmitted`, `TreeRecordReviewed`, `TreeNftMinted`, `ValidatorApproved`, `ValidatorRevoked`, `MilestoneBadgeClaimed`).
-- Idempotently updates Convex records.
-- Implements exponential backoff reconnection and historical catch-up reconciliation via `getSignaturesForAddress`.
+Autonomous Node.js worker and reconciliation engine in `server/indexer/`:
+- **Event Parser (`eventParser.ts`):** Decodes raw Solana transaction log messages into typed Anchor events (`BorshCoder` + `EventParser`), extracts GPS coordinates, and provides bidirectional 32-byte tree ID array to 64-char hex converters.
+- **Client Abstraction (`convexClient.ts`):** `IConvexSyncClient` contract implemented by `HttpConvexClient` for live cloud deployments and `InMemoryConvexClient` for deterministic offline test environments.
+- **Solana Event Indexer (`indexer.ts`):**
+  - Listens to Solana RPC WebSocket (`connection.onLogs`).
+  - Implements bounded LRU deduplication cache (`signature:eventName:uniqueId`).
+  - Exponential backoff retry handler (configurable `maxRetries`, backoff up to 2000ms).
+  - Checkpoint persistence in Convex (`indexerState`).
+  - Non-crashing terminal failure recording (`indexerErrors`).
+  - Resilient out-of-order event ingestion.
+  - Historical backfill catch-up via `connection.getSignaturesForAddress`.
+- **Reconciliation & Self-Healing Engine (`reconciler.ts`):**
+  - Reads on-chain ground truth via Anchor `program.account` fetchers.
+  - Compares on-chain accounts against Convex state across 7 discrepancy dimensions (`MISSING_TREE`, `STATUS_MISMATCH`, `APPROVALS_MISMATCH`, `MISSING_NFT`, `VALIDATOR_STATUS_MISMATCH`, `MISSING_MILESTONE_CLAIM`, `CONFIG_MISMATCH`).
+  - Generates comprehensive `ReconciliationReport`.
+  - Automatically heals Convex records using `reconcileAndHeal()` **without ever mutating on-chain Solana state**.
 
 ---
 

@@ -11,6 +11,7 @@
 import type * as campaigns from "../campaigns.js";
 import type * as messages from "../messages.js";
 import type * as natureHeroes from "../natureHeroes.js";
+import type * as sync from "../sync.js";
 import type * as trees from "../trees.js";
 import type * as users from "../users.js";
 
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   campaigns: typeof campaigns;
   messages: typeof messages;
   natureHeroes: typeof natureHeroes;
+  sync: typeof sync;
   trees: typeof trees;
   users: typeof users;
 }>;

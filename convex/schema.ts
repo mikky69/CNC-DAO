@@ -40,6 +40,11 @@ export default defineSchema({
     isActive: v.optional(v.boolean()),
     role: userRoles,
     joinedAt: v.string(),
+    // Blockchain validator synchronization fields
+    validatorPda: v.optional(v.string()),
+    isValidatorActive: v.optional(v.boolean()),
+    validatorApprovedAt: v.optional(v.string()),
+    badgeAsset: v.optional(v.string()),
   })
     .index("by_email", ["email"])
     .index("by_walletAddress", ["walletAddress"]),
@@ -54,9 +59,25 @@ export default defineSchema({
     imageUrl: v.optional(v.string()),
     status: treeStatuses,
     createdAt: v.string(),
+    // On-chain Solana tracking fields
+    onChainStatus: v.optional(v.string()),
+    treeIdBytesHex: v.optional(v.string()),
+    onChainPda: v.optional(v.string()),
+    submissionTx: v.optional(v.string()),
+    submissionSlot: v.optional(v.number()),
+    approvalsCount: v.optional(v.number()),
+    rejectionsCount: v.optional(v.number()),
+    verifiedAt: v.optional(v.string()),
+    nftAssetAddress: v.optional(v.string()),
+    mintTx: v.optional(v.string()),
+    mintSlot: v.optional(v.number()),
+    lastSyncedSlot: v.optional(v.number()),
+    lastSyncedAt: v.optional(v.string()),
   })
     .index("by_walletAddress", ["walletAddress"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_onChainPda", ["onChainPda"])
+    .index("by_treeIdBytesHex", ["treeIdBytesHex"]),
 
   natureHeroApplications: defineTable({
     userId: v.id("users"),
@@ -105,16 +126,68 @@ export default defineSchema({
     status: v.optional(v.string()),
     notes: v.optional(v.string()),
     createdAt: v.string(),
+    // On-chain Solana tracking fields
+    txSignature: v.optional(v.string()),
+    slot: v.optional(v.number()),
+    onChainPda: v.optional(v.string()),
   })
     .index("by_treeId", ["treeId"])
     .index("by_validatorId", ["validatorId"])
-    .index("by_treeId_validatorId", ["treeId", "validatorId"]),
+    .index("by_treeId_validatorId", ["treeId", "validatorId"])
+    .index("by_txSignature", ["txSignature"]),
 
   stats: defineTable({
     key: v.string(),
     value: v.number(),
     updatedAt: v.optional(v.string()),
   }).index("by_key", ["key"]),
+
+  milestoneClaims: defineTable({
+    walletAddress: v.string(),
+    tier: v.number(), // 0 = First Root, 1 = Grove Builder, 2 = Forest Guardian
+    badgeName: v.string(),
+    badgeAsset: v.string(),
+    treesVerified: v.number(),
+    txSignature: v.string(),
+    slot: v.number(),
+    claimedAt: v.string(),
+  })
+    .index("by_walletAddress", ["walletAddress"])
+    .index("by_badgeAsset", ["badgeAsset"])
+    .index("by_wallet_tier", ["walletAddress", "tier"])
+    .index("by_txSignature", ["txSignature"]),
+
+  protocolConfigs: defineTable({
+    adminAuthority: v.string(),
+    feeTreasury: v.string(),
+    requiredApprovals: v.number(),
+    isPaused: v.boolean(),
+    protocolFeeLamports: v.string(),
+    treeCollection: v.optional(v.string()),
+    badgeCollection: v.optional(v.string()),
+    lastSyncedSlot: v.number(),
+    updatedAt: v.string(),
+  }).index("by_adminAuthority", ["adminAuthority"]),
+
+  indexerState: defineTable({
+    key: v.string(),
+    lastSlot: v.number(),
+    lastSignature: v.optional(v.string()),
+    processedEventsCount: v.number(),
+    updatedAt: v.string(),
+  }).index("by_key", ["key"]),
+
+  indexerErrors: defineTable({
+    signature: v.string(),
+    slot: v.optional(v.number()),
+    eventName: v.string(),
+    errorMessage: v.string(),
+    rawEvent: v.string(),
+    resolved: v.boolean(),
+    timestamp: v.string(),
+  })
+    .index("by_signature", ["signature"])
+    .index("by_resolved", ["resolved"]),
 
   adminActions: defineTable({
     adminId: v.id("users"),

@@ -1,0 +1,34 @@
+[toolchain]
+anchor_version = "0.30.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+naturre = "E6wG3g53YnSuzgzrpJF9zFXFGh7dhraSGejKpRQETjUp"
+
+[programs.devnet]
+naturre = "E6wG3g53YnSuzgzrpJF9zFXFGh7dhraSGejKpRQETjUp"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[test]
+startup_wait = 20000
+
+[test.validator]
+url = "https://api.devnet.solana.com"
+
+[[test.validator.clone]]
+address = "CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d"
+
+[[test.validator.clone]]
+address = "9ZC25KLUrfgSoFVgjE1rrydZBbZns58UXi8A8ZhTdGfr"
+
+[scripts]
+test = "npx vitest run --config vitest.anchor.config.ts"
